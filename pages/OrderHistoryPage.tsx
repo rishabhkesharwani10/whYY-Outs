@@ -27,7 +27,7 @@ const OrderHistoryPage: React.FC = () => {
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="mb-8">
-          <BackButton />
+          <BackButton fallback="/profile" />
         </div>
         <h1 className="font-serif text-4xl text-brand-light mb-2">My Orders</h1>
         <p className="text-brand-light/70 mb-8">View your past orders and their status.</p>

@@ -150,7 +150,7 @@ const AdminEditProductPage: React.FC = () => {
         <AdminLayout>
             <div className="page-fade-in">
                 <div className="mb-6">
-                    <BackButton />
+                    <BackButton fallback="/admin/products" />
                 </div>
                 <div className="max-w-3xl mx-auto bg-black/30 border border-brand-gold/20 rounded-lg shadow-lg p-8">
                     <h1 className="font-serif text-4xl text-brand-light mb-2">Edit Product</h1>

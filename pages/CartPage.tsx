@@ -34,7 +34,7 @@ const CartPage: React.FC = () => {
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="mb-8">
-          <BackButton />
+          <BackButton fallback="/shop" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg shadow-brand-gold/10 p-6">

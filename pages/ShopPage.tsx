@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard.tsx';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import Icon from '../components/Icon.tsx';
+import BackButton from '../components/BackButton.tsx';
 
 const ShopPage: React.FC = () => {
   const { products } = useProducts();
@@ -149,6 +150,9 @@ const ShopPage: React.FC = () => {
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-24 pt-32">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <div className="flex flex-col lg:flex-row gap-8">
           <Sidebar />
           <div className="w-full lg:w-3/4 xl:w-4/5">

@@ -125,7 +125,7 @@ const AddProductPage: React.FC = () => {
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="mb-8">
-          <BackButton />
+          <BackButton fallback={adminMode ? '/admin/products' : '/seller-dashboard'} />
         </div>
         <div className="max-w-3xl mx-auto bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg shadow-brand-gold/10 p-8">
           <h1 className="font-serif text-4xl text-brand-light mb-2">Add a New Product</h1>

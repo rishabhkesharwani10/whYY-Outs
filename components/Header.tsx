@@ -63,7 +63,10 @@ const Header: React.FC = () => {
                     <span className="font-bold text-sm">$120.50</span>
                   </div>
                  </div>
-                 <NavIcon to="/profile" iconName="user" ariaLabel="Profile" />
+                 <ReactRouterDOM.Link to="/profile" className="flex items-center gap-2 p-2 text-brand-light/80 hover:text-white transition-colors duration-300" aria-label="Profile">
+                    <span className="hidden sm:inline font-medium text-sm">{user.fullName}</span>
+                    <Icon name="user" className="w-6 h-6" />
+                 </ReactRouterDOM.Link>
                  <NavIcon to="/cart" iconName="cart" badgeCount={itemCount} ariaLabel="Shopping Cart" />
               </>
             ) : (

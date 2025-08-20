@@ -25,11 +25,12 @@ const mapSupabaseOrder = (order: any): Order => ({
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (user) {
+        const isAdmin = user.email === 'whyyouts@gmail.com';
         let query = supabase.from('orders').select('*');
         
         // If user is not admin, only fetch their own orders.
@@ -50,7 +51,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     fetchOrders();
-  }, [user, isAdmin]);
+  }, [user]);
 
   const addOrder = useCallback(async (orderData: Omit<Order, 'id'>) => {
     // Map to snake_case for Supabase insert

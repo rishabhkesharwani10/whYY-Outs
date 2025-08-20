@@ -7,6 +7,7 @@ import Footer from '../components/Footer.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useProducts } from '../hooks/useProducts.ts';
 import ProductCard from '../components/ProductCard.tsx';
+import BackButton from '../components/BackButton.tsx';
 
 const SellerDashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -19,6 +20,9 @@ const SellerDashboardPage: React.FC = () => {
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div className="mb-8">
+          <BackButton fallback="/profile" />
+        </div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="font-serif text-4xl text-brand-light">Seller Dashboard</h1>

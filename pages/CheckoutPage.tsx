@@ -78,7 +78,7 @@ const CheckoutPage: React.FC = () => {
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
-        <div className="mb-8"><BackButton /></div>
+        <div className="mb-8"><BackButton fallback="/cart" /></div>
         <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg p-6 space-y-8">
                 <div>

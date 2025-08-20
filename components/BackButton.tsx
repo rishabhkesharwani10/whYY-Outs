@@ -1,12 +1,23 @@
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 
-const BackButton: React.FC = () => {
+const BackButton: React.FC<{ fallback?: string }> = ({ fallback = '/' }) => {
   const navigate = ReactRouterDOM.useNavigate();
+  const location = ReactRouterDOM.useLocation();
+
+  const handleBack = () => {
+    // A key of 'default' means this is the first page in the history stack for the current session.
+    // In this case, we navigate to a sensible fallback instead of going "back" out of the app.
+    if (location.key !== 'default') {
+      navigate(-1);
+    } else {
+      navigate(fallback);
+    }
+  };
 
   return (
     <button
-      onClick={() => navigate(-1)}
+      onClick={handleBack}
       className="inline-flex items-center font-sans text-sm tracking-widest text-brand-gold hover:text-brand-gold-light transition-colors duration-300 group"
       aria-label="Go back to the previous page"
     >

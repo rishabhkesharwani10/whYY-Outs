@@ -51,7 +51,7 @@ const OrderDetailPage: React.FC = () => {
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
                 <div className="mb-8">
-                    <BackButton />
+                    <BackButton fallback="/order-history" />
                 </div>
                 <div className="bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg shadow-brand-gold/10 p-6 md:p-8">
                     <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-brand-gold/20 pb-6 mb-6">

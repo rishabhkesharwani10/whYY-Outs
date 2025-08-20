@@ -7,6 +7,7 @@ import Footer from '../components/Footer.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useProducts } from '../hooks/useProducts.ts';
 import ProductCard from '../components/ProductCard.tsx';
+import BackButton from '../components/BackButton.tsx';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -46,75 +47,80 @@ const LoginPage: React.FC = () => {
       <Header />
 
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md bg-brand-dark p-8 rounded-lg border border-brand-gold/20 shadow-lg shadow-brand-gold/10">
-          <h1 className="font-serif text-4xl text-center text-brand-light mb-2">
-            Login
-          </h1>
-          <p className="text-center text-brand-light/70 mb-8">
-            Welcome back to whYYOuts.
-          </p>
+        <div className="w-full max-w-md">
+          <div className="mb-6">
+            <BackButton />
+          </div>
+          <div className="bg-brand-dark p-8 rounded-lg border border-brand-gold/20 shadow-lg shadow-brand-gold/10">
+            <h1 className="font-serif text-4xl text-center text-brand-light mb-2">
+              Login
+            </h1>
+            <p className="text-center text-brand-light/70 mb-8">
+              Welcome back to whYYOuts.
+            </p>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label 
-                htmlFor="email" 
-                className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                placeholder="user@example.com"
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center">
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div>
                 <label 
-                  htmlFor="password" 
+                  htmlFor="email" 
                   className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
                 >
-                  Password
+                  Email Address
                 </label>
-                <ReactRouterDOM.Link to="/forgot-password" className="text-xs text-brand-gold hover:underline">
-                  Forgot Password?
-                </ReactRouterDOM.Link>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
+                  placeholder="user@example.com"
+                />
               </div>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-            
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-            <div>
-              <button 
-                type="submit" 
-                className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase"
-              >
-                Login
-              </button>
-            </div>
-          </form>
+              <div>
+                <div className="flex justify-between items-center">
+                  <label 
+                    htmlFor="password" 
+                    className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
+                  >
+                    Password
+                  </label>
+                  <ReactRouterDOM.Link to="/forgot-password" className="text-xs text-brand-gold hover:underline">
+                    Forgot Password?
+                  </ReactRouterDOM.Link>
+                </div>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
+              
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-brand-light/70">
-              Don't have an account?{' '}
-              <ReactRouterDOM.Link to="/register" className="font-medium text-brand-gold hover:underline">
-                Register
-              </ReactRouterDOM.Link>
-            </p>
+              <div>
+                <button 
+                  type="submit" 
+                  className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase"
+                >
+                  Login
+                </button>
+              </div>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-brand-light/70">
+                Don't have an account?{' '}
+                <ReactRouterDOM.Link to="/register" className="font-medium text-brand-gold hover:underline">
+                  Register
+                </ReactRouterDOM.Link>
+              </p>
+            </div>
           </div>
         </div>
 
