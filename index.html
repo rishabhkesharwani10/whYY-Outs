@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to whYYOuts | The Future of Shopping</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'serif': ['"Cormorant Garamond"', 'serif'],
+              'sans': ['"Poppins"', 'sans-serif'],
+            },
+            colors: {
+              'brand-dark': '#101010',
+              'brand-light': '#EAEAEA',
+              'brand-gold': '#BFA181',
+              'brand-gold-light': '#D7C0A5',
+              'brand-gold-dark': '#A7825D',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #101010; /* brand-dark */
+        font-family: "Poppins", sans-serif;
+      }
+      /* For custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f1f1f;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+      .bg-grid-gold {
+        background-image:
+          linear-gradient(to right, rgba(191, 161, 129, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(191, 161, 129, 0.1) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+      
+      /* Custom Checkbox */
+      .form-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        height: 1.25rem;
+        width: 1.25rem;
+        border-radius: 0.25rem;
+        border: 1px solid #BFA18180; /* brand-gold with opacity */
+        background-color: #00000033; /* black/20 */
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .form-checkbox:checked {
+        background-color: #BFA181; /* brand-gold */
+        border-color: #BFA181;
+      }
+      .form-checkbox:checked::after {
+        content: '✔';
+        position: absolute;
+        color: #101010; /* brand-dark */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
+
+      /* Custom Range Slider */
+      input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+      }
+      input[type=range]:focus {
+        outline: none;
+      }
+      input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: #BFA18180; /* brand-gold with opacity */
+        border-radius: 5px;
+      }
+      input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #BFA181; /* brand-gold */
+        cursor: pointer;
+        margin-top: -6px;
+      }
+      input[type=range]::-moz-range-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: #BFA18180;
+        border-radius: 5px;
+      }
+      input[type=range]::-moz-range-thumb {
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #BFA181;
+        cursor: pointer;
+      }
+
+      /* Page Transitions */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .page-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+      }
+    </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "react": "https://esm.sh/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.8.1"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
