@@ -65,18 +65,20 @@ const FlashDealsLoggedIn: React.FC<{ product: any }> = ({ product }) => {
   );
 };
 
-const PersonalizedForYou: React.FC<{ product: any }> = ({ product }) => (
+const PersonalizedForYou: React.FC<{ product: any, isNew?: boolean }> = ({ product, isNew = false }) => (
   <div className="h-full group relative bg-black/40 border border-brand-gold/20 rounded-2xl p-6 flex flex-col backdrop-blur-sm shadow-2xl shadow-brand-gold/10 overflow-hidden">
       <img src={product.image} alt={product.name} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500"/>
       <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/70 to-transparent"></div>
       <div className="relative z-10 flex flex-col flex-grow justify-between">
           <div>
-              <h3 className="font-serif text-2xl text-brand-gold-light">Because You'll Love</h3>
+              <h3 className="font-serif text-2xl text-brand-gold-light">
+                {isNew ? "Fresh on whYYOuts" : "Because You'll Love"}
+              </h3>
               <p className="text-white mt-2 text-lg font-semibold">{product.name}</p>
           </div>
           <div className="flex items-center justify-between mt-4">
               <p className="text-2xl font-bold text-white">${product.price.toFixed(2)}</p>
-              <button className="text-xs font-bold text-brand-gold hover:underline">Why was this recommended?</button>
+              {!isNew && <button className="text-xs font-bold text-brand-gold hover:underline">Why was this recommended?</button>}
           </div>
       </div>
   </div>
@@ -164,8 +166,12 @@ const LoggedInHomePage: React.FC = () => {
     );
   }
   
-  const flashDealProduct = products[4];
-  const recommendedProduct = products[2];
+  // Use the newest product for the "Fresh on whYYOuts" section.
+  const newestProduct = products.length > 0 ? products[0] : null;
+  // Use a stable but different product for the flash deal to avoid showing the same one twice.
+  // Using index 4 for stability, but fallback to the second newest if not enough products.
+  const flashDealProduct = products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
+
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
@@ -176,7 +182,7 @@ const LoggedInHomePage: React.FC = () => {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[22rem]">
                 {flashDealProduct && <FlashDealsLoggedIn product={flashDealProduct} />}
-                {recommendedProduct && <PersonalizedForYou product={recommendedProduct} />}
+                {newestProduct && <PersonalizedForYou product={newestProduct} isNew={true} />}
             </div>
         </section>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">

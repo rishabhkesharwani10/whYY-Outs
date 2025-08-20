@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
@@ -32,6 +30,7 @@ const AddProductPage: React.FC = () => {
   const [sizes, setSizes] = useState('');
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -52,6 +51,7 @@ const AddProductPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setUploadStatus('');
     setIsUploading(true);
 
     if (!user) {
@@ -66,6 +66,7 @@ const AddProductPage: React.FC = () => {
     }
 
     try {
+      setUploadStatus('Uploading image...');
       const filePath = `public/${Date.now()}-${imageFile.name}`;
       const { error: uploadError } = await supabase.storage
         .from('product-images')
@@ -73,6 +74,7 @@ const AddProductPage: React.FC = () => {
 
       if (uploadError) throw uploadError;
 
+      setUploadStatus('Finalizing product...');
       const { data: publicUrlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath);
@@ -92,16 +94,26 @@ const AddProductPage: React.FC = () => {
         sellerId: user.id,
       };
       
-      const { error: addError } = await addProduct(productData);
+      const { data: newProduct, error: addError } = await addProduct(productData);
+      
       if (addError) {
           throw addError;
+      } else if (newProduct) {
+          if (adminMode) {
+            // Redirect to the new edit page for admins
+            navigate(`/admin/products/edit/${newProduct.id}`);
+          } else {
+            // Keep original flow for sellers
+            navigate('/seller-dashboard');
+          }
       } else {
+          // Fallback in case newProduct is null without an error
           navigate(adminMode ? '/admin/products' : '/seller-dashboard');
       }
     } catch (err: any) {
         setError(err.message || 'An unexpected error occurred.');
-    } finally {
         setIsUploading(false);
+        setUploadStatus('');
     }
   };
   
@@ -180,8 +192,15 @@ const AddProductPage: React.FC = () => {
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
             <div className="pt-4">
-              <button type="submit" disabled={isUploading} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase disabled:opacity-50 disabled:cursor-not-allowed">
-                {isUploading ? 'Uploading...' : 'Add Product'}
+              <button type="submit" disabled={isUploading} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center">
+                {isUploading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin mr-3"></div>
+                      <span>{uploadStatus || 'Processing...'}</span>
+                    </>
+                  ) : (
+                    'Add Product'
+                )}
               </button>
             </div>
           </form>
