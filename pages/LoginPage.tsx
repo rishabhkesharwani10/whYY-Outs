@@ -1,29 +1,25 @@
 
-
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
-import { useProducts } from '../hooks/useProducts.ts';
-import ProductCard from '../components/ProductCard.tsx';
-import BackButton from '../components/BackButton.tsx';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = ReactRouterDOM.useNavigate();
-  const { products } = useProducts();
-
-  const fashionProducts = products.filter(p => p.categoryId === 'fashion').slice(0, 2);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/shop', { replace: true });
+    if (isAuthenticated && user) {
+      // The HomePage component will handle role-based redirection.
+      // Customer -> shows dashboard at '/'
+      // Seller -> redirects from '/' to '/seller-dashboard'
+      navigate('/', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +40,10 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
-      <Header />
+      <Header showSearch={false} />
 
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-16">
+      <main className="flex-grow flex items-center justify-center px-4 pt-24 pb-12">
         <div className="w-full max-w-md">
-          <div className="mb-6">
-            <BackButton />
-          </div>
           <div className="bg-brand-dark p-8 rounded-lg border border-brand-gold/20 shadow-lg shadow-brand-gold/10">
             <h1 className="font-serif text-4xl text-center text-brand-light mb-2">
               Login
@@ -123,19 +116,6 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {fashionProducts.length > 0 && (
-          <div className="mt-16 w-full max-w-2xl">
-            <h2 className="font-serif text-3xl text-center text-brand-gold mb-8 tracking-wider uppercase">
-              Explore Fashion
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {fashionProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </div>
-        )}
       </main>
 
       <Footer />

@@ -1,11 +1,9 @@
 
-
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
-import BackButton from '../components/BackButton.tsx';
 
 const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -13,16 +11,21 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'customer' | 'seller'>('customer');
+  const [panNumber, setPanNumber] = useState('');
+  const [gstNumber, setGstNumber] = useState('');
+  const [address, setAddress] = useState('');
+  const [pincode, setPincode] = useState('');
   const [error, setError] = useState('');
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, user } = useAuth();
   const navigate = ReactRouterDOM.useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/shop', { replace: true });
+    if (isAuthenticated && user) {
+      // The HomePage component will handle role-based redirection after successful login.
+      navigate('/', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,12 +34,16 @@ const RegisterPage: React.FC = () => {
       setError('Please fill in all fields.');
       return;
     }
+    if (role === 'seller' && !panNumber && !gstNumber) {
+      setError('Either a PAN number or GST number is required for sellers.');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
     
-    const { error: registerError } = await register(fullName, email, password, role);
+    const { error: registerError } = await register(fullName, email, password, role, panNumber, gstNumber, address, pincode);
 
     if (registerError) {
       setError(registerError.message || 'Failed to register.');
@@ -47,13 +54,10 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
-      <Header />
+      <Header showSearch={false} />
 
-      <main className="flex-grow flex items-center justify-center px-4 py-12">
+      <main className="flex-grow flex items-center justify-center px-4 pt-24 pb-12">
         <div className="w-full max-w-md">
-          <div className="mb-6">
-            <BackButton />
-          </div>
           <div className="bg-brand-dark p-8 rounded-lg border border-brand-gold/20 shadow-lg shadow-brand-gold/10">
             {registrationSuccess ? (
               <div className="text-center">
@@ -160,6 +164,75 @@ const RegisterPage: React.FC = () => {
                       placeholder="••••••••"
                     />
                   </div>
+
+                  {role === 'seller' && (
+                    <>
+                      <div>
+                        <label 
+                          htmlFor="panNumber" 
+                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
+                        >
+                          PAN Number (or GST)
+                        </label>
+                        <input
+                          type="text"
+                          id="panNumber"
+                          value={panNumber}
+                          onChange={(e) => setPanNumber(e.target.value)}
+                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
+                          placeholder="ABCDE1234F"
+                        />
+                      </div>
+                      <div>
+                        <label 
+                          htmlFor="gstNumber" 
+                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
+                        >
+                          GST Number (or PAN)
+                        </label>
+                        <input
+                          type="text"
+                          id="gstNumber"
+                          value={gstNumber}
+                          onChange={(e) => setGstNumber(e.target.value)}
+                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
+                          placeholder="22ABCDE1234F1Z5"
+                        />
+                      </div>
+                       <div>
+                        <label 
+                          htmlFor="address" 
+                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
+                        >
+                          Business Address (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          id="address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
+                          placeholder="123 Business Rd"
+                        />
+                      </div>
+                      <div>
+                        <label 
+                          htmlFor="pincode" 
+                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
+                        >
+                          Pincode / ZIP (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          id="pincode"
+                          value={pincode}
+                          onChange={(e) => setPincode(e.target.value)}
+                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
+                          placeholder="12345"
+                        />
+                      </div>
+                    </>
+                  )}
                   
                   {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 

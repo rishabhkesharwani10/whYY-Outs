@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo } from 'react';
 import { NAVIGATION_CATEGORIES, SMART_SUGGESTIONS } from '../constants.ts';
 import { useProducts } from '../hooks/useProducts.ts';
@@ -7,7 +6,6 @@ import ProductCard from '../components/ProductCard.tsx';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import Icon from '../components/Icon.tsx';
-import BackButton from '../components/BackButton.tsx';
 
 const ShopPage: React.FC = () => {
   const { products } = useProducts();
@@ -17,7 +15,7 @@ const ShopPage: React.FC = () => {
   const [otherFilters, setOtherFilters] = useState<{ [key: string]: string[] }>({});
   const [sortBy, setSortBy] = useState('popularity');
 
-  const currentCategory = useMemo(() => {
+  const currentCategoryDetails = useMemo(() => {
     return NAVIGATION_CATEGORIES.find(c => c.id === selectedCategory);
   }, [selectedCategory]);
 
@@ -35,16 +33,22 @@ const ShopPage: React.FC = () => {
     setPriceRange(1500);
     setOtherFilters({});
     setSortBy('popularity');
+    setSearchQuery('');
   }
 
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(prev => prev === categoryId ? null : categoryId);
+  const handleCategorySelect = (categoryId: string | null) => {
+    setSelectedCategory(prev => (prev === categoryId ? null : categoryId));
     resetFilters();
   };
   
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...products];
-
+    
+    // Category Filter
+    if (selectedCategory) {
+      filtered = filtered.filter(p => p.categoryId === selectedCategory);
+    }
+    
     // Search Query Filter
     if (searchQuery) {
       filtered = filtered.filter(p => 
@@ -52,16 +56,11 @@ const ShopPage: React.FC = () => {
         p.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
-    // Category Filter
-    if (selectedCategory) {
-      filtered = filtered.filter(p => p.categoryId === selectedCategory);
-    }
 
     // Price Filter
     filtered = filtered.filter(p => p.price <= priceRange);
     
-    // Other Filters (Size, Color, Material)
+    // Other Filters (Size, etc.)
     Object.entries(otherFilters).forEach(([filterId, values]) => {
       if (values.length > 0) {
         filtered = filtered.filter(p => {
@@ -92,57 +91,48 @@ const ShopPage: React.FC = () => {
 
     return filtered;
   }, [products, searchQuery, selectedCategory, priceRange, otherFilters, sortBy]);
-
-  const Sidebar = () => (
-    <aside className="w-full lg:w-1/4 xl:w-1/5 p-6 bg-black/20 border border-brand-gold/10 rounded-lg h-fit">
-      <h2 className="font-serif text-2xl text-brand-gold mb-6">Categories</h2>
-      <nav className="space-y-2">
-        {NAVIGATION_CATEGORIES.map(cat => (
-          <div key={cat.id}>
-            <button
-              onClick={() => handleCategorySelect(cat.id)}
-              className={`w-full text-left font-semibold flex justify-between items-center py-2 px-2 rounded transition-colors ${selectedCategory === cat.id ? 'bg-brand-gold/10 text-brand-gold' : 'hover:bg-brand-gold/5'}`}
-            >
-              {cat.name}
-              <Icon name="chevron-down" className={`w-5 h-5 transition-transform ${selectedCategory === cat.id ? 'rotate-180' : ''}`} />
-            </button>
-            {selectedCategory === cat.id && (
-              <div className="pl-4 mt-2 space-y-1">
-                {cat.subCategories.map(sub => (
-                  <button key={sub.id} className={`block w-full text-left py-1 px-2 text-sm rounded text-brand-light/80 hover:text-white`}>
-                    {sub.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </nav>
-      {currentCategory && (
-        <div className="mt-8 pt-6 border-t border-brand-gold/20">
-            <h3 className="font-serif text-xl text-brand-gold mb-4">Filters</h3>
-            {/* Price */}
-            <div className="mb-6">
-                 <h4 className="font-semibold text-brand-light uppercase tracking-wider text-sm mb-3">Price</h4>
-                 <input type="range" min="0" max="1500" value={priceRange} onChange={e => setPriceRange(Number(e.target.value))} className="w-full" />
-                 <div className="text-sm text-brand-light/80 text-center mt-1">Up to ${priceRange}</div>
-            </div>
-            {/* Other Filters */}
-            {currentCategory.filters && currentCategory.filters.map(filter => (
-                <div key={filter.id} className="mb-6">
-                    <h4 className="font-semibold text-brand-light uppercase tracking-wider text-sm mb-3">{filter.name}</h4>
-                     <div className="space-y-2">
-                        {filter.options?.map(opt => (
-                            <label key={opt.value} className="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" className="form-checkbox" checked={(otherFilters[filter.id] || []).includes(opt.value)} onChange={() => handleOtherFilterToggle(filter.id, opt.value)} />
-                                <span className="text-brand-light/90">{opt.label}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            ))}
+  
+  const CategorySelector = () => (
+    <div className="flex items-center space-x-2 overflow-x-auto pb-4 -mx-4 px-4">
+       <button
+        onClick={() => handleCategorySelect(null)}
+        className={`flex-shrink-0 px-5 py-2.5 font-sans text-sm font-semibold rounded-full transition-colors duration-300 ${!selectedCategory ? 'bg-brand-gold text-brand-dark' : 'bg-black/40 text-brand-light hover:bg-brand-gold/20'}`}
+      >
+        All Products
+      </button>
+      {NAVIGATION_CATEGORIES.map(cat => (
+        <button
+          key={cat.id}
+          onClick={() => handleCategorySelect(cat.id)}
+          className={`flex-shrink-0 px-5 py-2.5 font-sans text-sm font-semibold rounded-full transition-colors duration-300 ${selectedCategory === cat.id ? 'bg-brand-gold text-brand-dark' : 'bg-black/40 text-brand-light hover:bg-brand-gold/20'}`}
+        >
+          {cat.name}
+        </button>
+      ))}
+    </div>
+  );
+  
+  const FilterPanel = () => (
+    <aside className="w-full lg:w-1/4 xl:w-1/5 p-6 bg-black/20 border border-brand-gold/10 rounded-lg h-fit flex-shrink-0">
+        <h3 className="font-serif text-xl text-brand-gold mb-4">Filters</h3>
+        <div className="mb-6">
+             <h4 className="font-semibold text-brand-light uppercase tracking-wider text-sm mb-3">Price</h4>
+             <input type="range" min="0" max="1500" value={priceRange} onChange={e => setPriceRange(Number(e.target.value))} className="w-full" />
+             <div className="text-sm text-brand-light/80 text-center mt-1">Up to ${priceRange}</div>
         </div>
-      )}
+        {currentCategoryDetails?.filters?.map(filter => (
+            <div key={filter.id} className="mb-6">
+                <h4 className="font-semibold text-brand-light uppercase tracking-wider text-sm mb-3">{filter.name}</h4>
+                 <div className="space-y-2">
+                    {filter.options?.map(opt => (
+                        <label key={opt.value} className="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" className="form-checkbox" checked={(otherFilters[filter.id] || []).includes(opt.value)} onChange={() => handleOtherFilterToggle(filter.id, opt.value)} />
+                            <span className="text-brand-light/90">{opt.label}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+        ))}
     </aside>
   );
 
@@ -150,18 +140,17 @@ const ShopPage: React.FC = () => {
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
       <Header />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-24 pt-32">
-        <div className="mb-6">
-          <BackButton />
-        </div>
-        <div className="flex flex-col lg:flex-row gap-8">
-          <Sidebar />
-          <div className="w-full lg:w-3/4 xl:w-4/5">
-            {/* Search and Sort */}
+        <CategorySelector />
+        
+        <div className="flex flex-col lg:flex-row gap-8 mt-8">
+          {selectedCategory && <FilterPanel />}
+
+          <div className="w-full">
             <div className="bg-black/20 border border-brand-gold/10 rounded-lg p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="relative w-full md:w-auto flex-grow">
                 <input
                   type="text"
-                  placeholder="Search in this category..."
+                  placeholder={`Search in ${currentCategoryDetails?.name || 'all products'}...`}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full bg-black/50 border border-brand-gold/30 rounded-full py-2 pl-10 pr-4 text-brand-light placeholder-brand-light/50 focus:outline-none focus:ring-1 focus:ring-brand-gold"
@@ -179,7 +168,6 @@ const ShopPage: React.FC = () => {
               </div>
             </div>
 
-            {/* AI Smart Suggestions */}
             {selectedCategory && SMART_SUGGESTIONS[selectedCategory] && (
               <div className="mb-6">
                 <h3 className="font-serif text-xl text-brand-gold mb-3 flex items-center gap-2"><Icon name="sparkles" className="w-5 h-5"/> Smart Suggestions</h3>
@@ -193,7 +181,6 @@ const ShopPage: React.FC = () => {
               </div>
             )}
             
-            {/* Product Grid */}
             <div className="border-t border-brand-gold/10 pt-6">
               <p className="text-sm text-brand-light/70 mb-4">{filteredAndSortedProducts.length} products found.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -202,7 +189,6 @@ const ShopPage: React.FC = () => {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
       </main>

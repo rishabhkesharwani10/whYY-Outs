@@ -1,5 +1,4 @@
 
-
 export interface Category {
   id: string;
   name: string;
@@ -20,6 +19,28 @@ export interface Product {
   features: string[];
   sizes?: string[];
   sellerId: string;
+
+  // New detailed fields
+  subCategoryId?: string;
+  brand?: string;
+  sku?: string;
+  upc?: string;
+  modelNumber?: string;
+  videoUrl?: string;
+  costPrice?: number;
+  stockQuantity?: number;
+  minOrderQuantity?: number;
+  maxOrderQuantity?: number;
+  weightKg?: number;
+  lengthCm?: number;
+  widthCm?: number;
+  heightCm?: number;
+  deliveryEstimate?: string;
+  color?: string;
+  material?: string;
+  expiryDate?: string; // Using string for DATE type
+  returnPolicy?: string;
+  warrantyDetails?: string;
 }
 
 export interface CartItem extends Product {
@@ -28,18 +49,33 @@ export interface CartItem extends Product {
   selectedSize?: string;
 }
 
-export interface User {
+// Base for common user properties
+interface BaseUser {
   id: string;
   fullName: string;
   email: string;
-  password?: string;
   phone: string;
   address: string;
   pincode: string;
   avatar_url?: string;
-  role: 'customer' | 'seller';
   createdAt?: string;
 }
+
+// Represents a customer profile
+export interface Customer extends BaseUser {
+  role: 'customer';
+}
+
+// Represents a seller profile
+export interface Seller extends BaseUser {
+  role: 'seller';
+  panNumber?: string;
+  gstNumber?: string;
+}
+
+// The user object in the auth context will be this union type
+export type AuthenticatedUser = Customer | Seller;
+
 
 export interface Order {
   id: string;
@@ -83,4 +119,40 @@ export interface NavigationCategory {
   subCategories: SubCategory[];
   brands?: string[];
   filters?: Filter[];
+}
+
+// Types for the new Seller Portal
+export interface ReturnRequest {
+  id: string;
+  orderId: string;
+  productName: string;
+  reason: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  requestedAt: string; // ISO string
+}
+
+export interface Payout {
+  id: string;
+  date: string; // ISO string
+  amount: number;
+  status: 'Completed' | 'Processing';
+  transactionId: string;
+}
+
+// Type for the new seller_bank_details table
+export interface SellerBankDetails {
+  seller_id: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+}
+
+
+// Types for AI Co-Pilot
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'ai' | 'system';
+  text?: string;
+  products?: Product[];
+  order?: Order;
 }

@@ -1,15 +1,12 @@
-
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import BottomNav from '../components/BottomNav.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useProducts } from '../hooks/useProducts.ts';
-import { NAVIGATION_CATEGORIES, SHOP_BY_GOAL } from '../constants.ts';
+import { NAVIGATION_CATEGORIES } from '../constants.ts';
 import Icon from '../components/Icon.tsx';
-import ProductCard from '../components/ProductCard.tsx';
 
 // ==================================================================
 // LoggedInHomePage - The AI Dashboard for authenticated users
@@ -24,7 +21,7 @@ const WelcomeUser: React.FC<{ name: string }> = ({ name }) => (
   </section>
 );
 
-const FlashDealsLoggedIn: React.FC<{ product: any }> = ({ product }) => {
+const FlashDeals: React.FC<{ product: any }> = ({ product }) => {
   const [timeLeft, setTimeLeft] = useState({ hours: 3, minutes: 45, seconds: 12 });
   const discountPercentage = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
@@ -102,63 +99,18 @@ const CategoryHub: React.FC = () => (
   </section>
 );
 
-const ShopByGoal: React.FC = () => (
-  <section className="py-12">
-    <h2 className="font-serif text-3xl text-center text-brand-light mb-8 tracking-wider">Shop by Goal</h2>
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {SHOP_BY_GOAL.map(goal => (
-        <div key={goal.name} className="group relative rounded-2xl overflow-hidden aspect-square border-2 border-brand-gold/20 hover:border-brand-gold transition-all duration-300">
-          <img src={goal.image} alt={goal.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-          <div className="absolute inset-0 p-4 flex flex-col justify-end text-white">
-            <Icon name={goal.icon as any} className="w-8 h-8 text-brand-gold-light mb-2"/>
-            <h3 className="font-bold text-lg">{goal.name}</h3>
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-);
-
-const DealBrain: React.FC = () => (
-    <div className="h-full bg-gradient-to-br from-brand-gold-dark/40 to-brand-dark/40 p-6 rounded-2xl border border-brand-gold/20 flex flex-col items-center justify-center text-center">
-        <h3 className="font-serif text-2xl text-brand-gold-light">DealBrain™ HQ</h3>
-        <p className="text-brand-light/80 mt-2">Auto-applied best offer:</p>
-        <p className="text-white text-xl font-bold mt-2">15% OFF on HDFC Cards</p>
-        <p className="text-xs text-brand-light/60 mt-1">Best Effective Price Guaranteed</p>
-        <button className="mt-4 font-sans text-xs tracking-widest px-6 py-2 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-all duration-300 uppercase font-bold rounded-md">
-            View All Offers
-        </button>
-    </div>
-);
-
-const LiveShoppingLoggedIn: React.FC = () => (
-  <div className="h-full group relative aspect-square md:aspect-auto bg-gray-800 rounded-2xl overflow-hidden border-2 border-brand-gold/20 hover:border-brand-gold transition-all duration-300 cursor-pointer">
-    <img src={`https://picsum.photos/seed/live_main/600/600`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Live Shopping" />
-    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-    <div className="absolute top-4 left-4 flex gap-2 items-center">
-      <div className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-        <Icon name="live" className="w-3 h-3"/> LIVE
-      </div>
-    </div>
-    <div className="absolute bottom-4 left-4 right-4 text-white">
-      <h3 className="text-lg font-bold">Latest Tech Trends</h3>
-      <p className="text-xs text-brand-light/80">Join now for exclusive deals!</p>
-    </div>
-  </div>
-);
-
-const AIPilotFAB: React.FC = () => (
-  <button className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-16 h-16 bg-gradient-to-br from-brand-gold to-brand-gold-dark rounded-full shadow-2xl shadow-brand-gold/40 flex items-center justify-center text-brand-dark z-50 hover:scale-110 transition-transform">
-      <Icon name="sparkles" className="w-8 h-8"/>
-  </button>
-);
-
 const LoggedInHomePage: React.FC = () => {
   const { user } = useAuth();
   const { products } = useProducts();
+  const navigate = ReactRouterDOM.useNavigate();
 
-  if (!user || products.length === 0) {
+  useEffect(() => {
+    if (user && user.role === 'seller') {
+      navigate('/seller-dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
+  if (!user || products.length === 0 || (user && user.role === 'seller')) {
     return (
       <div className="bg-brand-dark min-h-screen flex items-center justify-center">
         <p className="text-brand-gold animate-pulse">Loading Your Personal Dashboard...</p>
@@ -166,12 +118,8 @@ const LoggedInHomePage: React.FC = () => {
     );
   }
   
-  // Use the newest product for the "Fresh on whYYOuts" section.
   const newestProduct = products.length > 0 ? products[0] : null;
-  // Use a stable but different product for the flash deal to avoid showing the same one twice.
-  // Using index 4 for stability, but fallback to the second newest if not enough products.
   const flashDealProduct = products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
-
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
@@ -181,20 +129,14 @@ const LoggedInHomePage: React.FC = () => {
         <WelcomeUser name={user.fullName} />
         <section className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[22rem]">
-                {flashDealProduct && <FlashDealsLoggedIn product={flashDealProduct} />}
+                {flashDealProduct && <FlashDeals product={flashDealProduct} />}
                 {newestProduct && <PersonalizedForYou product={newestProduct} isNew={true} />}
             </div>
         </section>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <CategoryHub />
-          <ShopByGoal />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <DealBrain />
-            <LiveShoppingLoggedIn />
-          </div>
         </div>
       </main>
-      <AIPilotFAB />
       <Footer />
       <BottomNav />
     </div>
@@ -202,120 +144,51 @@ const LoggedInHomePage: React.FC = () => {
 };
 
 // ==================================================================
-// PublicHomePage - The premium landing page for new visitors
+// PublicHomePage - The welcome page for guests
 // ==================================================================
-
-const heroSlides = [
-    {
-        image: 'https://picsum.photos/seed/hero1/1920/1080',
-        title: "Why go out?",
-        subtitle: "Whyyouts delivers everything at your door.",
-        cta: 'Explore All Products',
-        link: '/shop'
-    },
-    {
-        image: 'https://picsum.photos/seed/hero2/1920/1080',
-        title: 'Luxury Fashion Collection',
-        subtitle: 'Discover the latest trends from top designers.',
-        cta: 'Shop Fashion',
-        link: '/shop'
-    },
-    {
-        image: 'https://picsum.photos/seed/hero3/1920/1080',
-        title: 'Next-Gen Electronics',
-        subtitle: 'Unbeatable prices on the latest gadgets.',
-        cta: 'Discover Tech',
-        link: '/shop'
-    },
-];
-
-const HeroSlider: React.FC = () => {
-    const [currentSlide, setCurrentSlide] = useState(0);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-        }, 7000);
-        return () => clearTimeout(timer);
-    }, [currentSlide]);
-
-    return (
-        <section className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden text-white">
-            {heroSlides.map((slide, index) => (
-                <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}>
-                    <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent"></div>
-                </div>
-            ))}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-wider leading-tight animate-fade-in-down" style={{animationDelay: '0.5s'}}>
-                    {heroSlides[currentSlide].title}
-                </h1>
-                <p className="mt-4 text-lg md:text-xl max-w-2xl text-brand-light/90 animate-fade-in-up" style={{animationDelay: '1s'}}>
-                    {heroSlides[currentSlide].subtitle}
-                </p>
-                <ReactRouterDOM.Link to={heroSlides[currentSlide].link} className="mt-8 font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase animate-fade-in-up" style={{animationDelay: '1.5s'}}>
-                    {heroSlides[currentSlide].cta}
-                </ReactRouterDOM.Link>
-            </div>
-        </section>
-    );
-};
-
-const SmartCategories: React.FC = () => (
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="font-serif text-3xl text-center text-brand-light mb-8 tracking-wider">Smart Categories</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
-            {NAVIGATION_CATEGORIES.map(cat => (
-                <ReactRouterDOM.Link to="/shop" key={cat.id} className="group flex flex-col items-center justify-center space-y-3 p-4 bg-black/40 border border-brand-gold/20 rounded-2xl backdrop-blur-sm hover:border-brand-gold hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-gold/10 transition-all duration-300 text-center">
-                    <img src={cat.image} alt={cat.name} className="w-20 h-20 rounded-full object-cover border-2 border-brand-gold/30 group-hover:border-brand-gold transition-all duration-300" />
-                    <span className="font-medium text-sm text-brand-light/80 group-hover:text-white transition-colors duration-300">{cat.name}</span>
-                </ReactRouterDOM.Link>
-            ))}
-        </div>
-    </section>
+const WelcomePublic: React.FC = () => (
+  <section className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h1 className="font-serif text-3xl md:text-4xl text-brand-light">
+      Welcome to <span className="text-brand-gold-light">whYYOuts</span> ✨
+    </h1>
+    <p className="text-brand-light/70 mt-2">The future of premium shopping awaits.</p>
+  </section>
 );
 
-const ProductSlider: React.FC<{ title: string; products: any[] }> = ({ title, products }) => {
-    const scrollContainer = useRef<HTMLDivElement>(null);
-    const scroll = (scrollOffset: number) => {
-        if(scrollContainer.current) {
-            scrollContainer.current.scrollLeft += scrollOffset;
-        }
-    };
+const PublicHomePage: React.FC = () => {
+  const { products } = useProducts();
+
+  if (products.length === 0) {
     return (
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="font-serif text-3xl text-brand-light tracking-wider">{title}</h2>
-                <div className="flex space-x-2">
-                    <button onClick={() => scroll(-300)} className="p-2 rounded-full border border-brand-gold/50 text-brand-gold hover:bg-brand-gold/10"><Icon name="chevron-left" /></button>
-                    <button onClick={() => scroll(300)} className="p-2 rounded-full border border-brand-gold/50 text-brand-gold hover:bg-brand-gold/10"><Icon name="chevron-right" /></button>
-                </div>
-            </div>
-            <div ref={scrollContainer} className="flex space-x-6 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none', scrollBehavior: 'smooth' }}>
-                {products.map(p => <div key={p.id} className="w-64 flex-shrink-0"><ProductCard product={p} /></div>)}
+      <div className="bg-brand-dark min-h-screen flex items-center justify-center">
+        <p className="text-brand-gold animate-pulse">Loading Our Collection...</p>
+      </div>
+    );
+  }
+  
+  const newestProduct = products.length > 0 ? products[0] : null;
+  const flashDealProduct = products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
+
+  return (
+    <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
+      <div className="absolute inset-0 bg-grid-gold opacity-5 z-0"></div>
+      <Header />
+      <main className="pb-24 md:pb-8 pt-28 space-y-12">
+        <WelcomePublic />
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[22rem]">
+                {flashDealProduct && <FlashDeals product={flashDealProduct} />}
+                {newestProduct && <PersonalizedForYou product={newestProduct} isNew={true} />}
             </div>
         </section>
-    );
-};
-
-
-const PublicHomePage: React.FC = () => {
-    const { products } = useProducts();
-    const recommendedProducts = products.slice(0, 8);
-
-    return (
-        <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
-            <Header />
-            <main className="pb-24 md:pb-8">
-                <HeroSlider />
-                <SmartCategories />
-                <ProductSlider title="Recommended For You" products={recommendedProducts} />
-            </main>
-            <Footer />
-            <BottomNav />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <CategoryHub />
         </div>
-    );
+      </main>
+      <Footer />
+      <BottomNav />
+    </div>
+  );
 };
 
 

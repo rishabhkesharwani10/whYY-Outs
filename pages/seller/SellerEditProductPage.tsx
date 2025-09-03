@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import AdminLayout from '../../components/AdminLayout.tsx';
+import SellerLayout from '../../components/SellerLayout.tsx';
 import { useProducts } from '../../hooks/useProducts.ts';
+import { useAuth } from '../../context/AuthContext.tsx';
 import { NAVIGATION_CATEGORIES } from '../../constants.ts';
-import BackButton from '../../components/BackButton.tsx';
 import type { Product } from '../../types.ts';
 import { supabase } from '../../supabase.ts';
 import Icon from '../../components/Icon.tsx';
+import BackButton from '../../components/BackButton.tsx';
 
 const mapSupabaseProductToApp = (p: any): Product => ({
   id: p.id, name: p.name, description: p.description, price: p.price, originalPrice: p.original_price, rating: p.rating, reviewCount: p.review_count, image: p.image, images: p.images || [], categoryId: p.category_id, features: p.features || [], sizes: p.sizes || [], sellerId: p.seller_id,
@@ -20,15 +21,17 @@ const FormSection: React.FC<{ title: string; children: React.ReactNode }> = ({ t
   </div>
 );
 
-const AdminEditProductPage: React.FC = () => {
+const SellerEditProductPage: React.FC = () => {
     const { productId } = ReactRouterDOM.useParams<{ productId: string }>();
     const navigate = ReactRouterDOM.useNavigate();
+    const { user } = useAuth();
     const { updateProduct, deleteProduct } = useProducts();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
-    
+    const [isAuthorized, setIsAuthorized] = useState(false);
+
     const [formData, setFormData] = useState<Partial<Product>>({});
     const [featuresInput, setFeaturesInput] = useState('');
     const [sizesInput, setSizesInput] = useState('');
@@ -44,41 +47,45 @@ const AdminEditProductPage: React.FC = () => {
 
     useEffect(() => {
         const fetchProduct = async () => {
-            if (!productId) return;
+            if (!productId || !user) return;
             setLoading(true);
             const { data, error: fetchErr } = await supabase.from('products').select('*').eq('id', productId).single();
             
             if (fetchErr) {
-                console.error("Error fetching product", fetchErr);
                 setError("Failed to load product data.");
             } else if (data) {
-                const fetchedProduct = mapSupabaseProductToApp(data);
-                setProduct(fetchedProduct);
-                setFormData(fetchedProduct);
-                setFeaturesInput(fetchedProduct.features?.join('\n') || '');
-                setSizesInput(fetchedProduct.sizes?.join(', ') || '');
-                setExistingImages([fetchedProduct.image, ...(fetchedProduct.images || [])].filter(Boolean));
+                if (data.seller_id === user.id) {
+                    const fetchedProduct = mapSupabaseProductToApp(data);
+                    setProduct(fetchedProduct);
+                    setFormData(fetchedProduct);
+                    setFeaturesInput(fetchedProduct.features?.join('\n') || '');
+                    setSizesInput(fetchedProduct.sizes?.join(', ') || '');
+                    setExistingImages([fetchedProduct.image, ...(fetchedProduct.images || [])].filter(Boolean));
+                    setIsAuthorized(true);
+                } else {
+                    setError("You are not authorized to edit this product.");
+                }
             }
             setLoading(false);
         }
         fetchProduct();
-    }, [productId]);
+    }, [productId, user]);
 
     const subcategories = useMemo(() => {
-      const selected = NAVIGATION_CATEGORIES.find(c => c.id === formData.categoryId);
-      return selected?.subCategories || [];
+        const selected = NAVIGATION_CATEGORIES.find(c => c.id === formData.categoryId);
+        return selected?.subCategories || [];
     }, [formData.categoryId]);
-    
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      const { name, value } = e.target;
-      const numericFields = ['price', 'originalPrice', 'costPrice', 'stockQuantity', 'minOrderQuantity', 'maxOrderQuantity', 'weightKg', 'lengthCm', 'widthCm', 'heightCm'];
-      if (numericFields.includes(name)) {
-        setFormData(prev => ({ ...prev, [name]: value === '' ? undefined : Number(value) }));
-      } else {
-        setFormData(prev => ({ ...prev, [name]: value }));
-      }
+        const { name, value } = e.target;
+        const numericFields = ['price', 'originalPrice', 'costPrice', 'stockQuantity', 'minOrderQuantity', 'maxOrderQuantity', 'weightKg', 'lengthCm', 'widthCm', 'heightCm'];
+        if (numericFields.includes(name)) {
+            setFormData(prev => ({ ...prev, [name]: value === '' ? undefined : Number(value) }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
-    
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
@@ -113,7 +120,6 @@ const AdminEditProductPage: React.FC = () => {
                     return supabase.storage.from('product-images').getPublicUrl(filePath).data.publicUrl;
                 })
             );
-
             const originalImages = [product.image, ...(product.images || [])].filter(Boolean);
             const imagesToDelete = originalImages.filter(img => !existingImages.includes(img));
             if (imagesToDelete.length > 0) {
@@ -121,10 +127,8 @@ const AdminEditProductPage: React.FC = () => {
                 const pathsToDelete = imagesToDelete.map(url => new URL(url).pathname.split(`/${BUCKET_NAME}/`)[1]);
                 await supabase.storage.from(BUCKET_NAME).remove(pathsToDelete);
             }
-
             const finalImageUrls = [...existingImages, ...newImageUrls];
             if (finalImageUrls.length === 0) throw new Error("Product must have at least one image.");
-            
             const [mainImage, ...otherImages] = finalImageUrls;
 
             const productData: Partial<Product> = {
@@ -133,7 +137,7 @@ const AdminEditProductPage: React.FC = () => {
                 images: otherImages,
                 features: featuresInput.split('\n').filter(f => f.trim() !== ''),
                 sizes: sizesInput.split(',').map(s => s.trim()).filter(s => s !== ''),
-                // FIX: Convert empty string to undefined so Supabase receives null
+                 // FIX: Convert empty string to undefined so Supabase receives null
                 expiryDate: formData.expiryDate || undefined,
             };
 
@@ -144,7 +148,6 @@ const AdminEditProductPage: React.FC = () => {
             setNewImageFiles([]);
             setNewImagePreviews([]);
             setTimeout(() => setMessage(''), 3000);
-
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {
@@ -153,33 +156,32 @@ const AdminEditProductPage: React.FC = () => {
     };
 
     const handleDelete = async () => {
-        if (product && window.confirm(`PERMANENTLY DELETE "${product.name}"? This action cannot be undone.`)) {
+      if (product && window.confirm(`PERMANENTLY DELETE "${product.name}"? This action cannot be undone.`)) {
             setIsActing(true);
             const { error: deleteError } = await deleteProduct(product);
             if (deleteError) {
                 setError(deleteError.message || 'Failed to delete product.');
                 setIsActing(false);
             } else {
-                navigate('/admin/products');
+                navigate('/seller/products');
             }
         }
     };
 
-    if (loading) { return <AdminLayout><div>Loading...</div></AdminLayout>; }
-    if (!product) { return <AdminLayout><div>Product not found or error loading.</div></AdminLayout>; }
+    if (loading) { return <SellerLayout><p>Loading...</p></SellerLayout>; }
+    if (!isAuthorized) { return <SellerLayout><div className="text-center p-8"><p className="text-red-500">{error}</p><BackButton fallback="/seller/products" /></div></SellerLayout>; }
 
     const formInputClass = "mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all";
     const formLabelClass = "block text-sm font-medium text-brand-gold tracking-wider uppercase";
 
     return (
-        <AdminLayout>
+        <SellerLayout>
             <div className="page-fade-in">
-                <div className="mb-6"><BackButton fallback="/admin/products" /></div>
+                <div className="mb-6"><BackButton fallback="/seller/products" /></div>
                 <div className="max-w-4xl mx-auto bg-black/30 border border-brand-gold/20 rounded-lg shadow-lg p-8">
                     <h1 className="font-serif text-4xl text-brand-light mb-2">Edit Product</h1>
                     <p className="text-brand-light/70 mb-8 truncate">Updating "{product.name}"</p>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* FORM SECTIONS ARE IDENTICAL TO AddProductPage, but with value bindings from formData */}
                       <FormSection title="Basic Product Information">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div><label htmlFor="name" className={formLabelClass}>Product Name</label><input type="text" id="name" name="name" value={formData.name || ''} onChange={handleInputChange} required className={formInputClass} /></div>
@@ -279,26 +281,23 @@ const AdminEditProductPage: React.FC = () => {
                           </div>
                            <div><label htmlFor="warrantyDetails" className={formLabelClass}>Warranty Details</label><input type="text" id="warrantyDetails" name="warrantyDetails" value={formData.warrantyDetails || ''} onChange={handleInputChange} className={formInputClass} placeholder="e.g., 1 Year Manufacturer Warranty"/></div>
                       </FormSection>
-                      
-                      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                      {message && <p className="text-green-400 text-sm text-center">{message}</p>}
 
-                      <div className="pt-4 space-y-4">
-                        <button type="submit" disabled={isSubmitting || isActing} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold bg-brand-gold text-brand-dark hover:bg-brand-gold-dark transition-colors duration-300 uppercase disabled:opacity-50">
-                            {isSubmitting ? 'Saving...' : 'Save Changes'}
-                        </button>
-                        <div className="border-t border-brand-gold/20 pt-4">
-                            <h3 className="font-serif text-lg text-brand-gold mb-2">Danger Zone</h3>
-                            <button type="button" onClick={handleDelete} disabled={isActing || isSubmitting} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors duration-300 uppercase disabled:opacity-50">
-                                {isActing ? 'Deleting...' : 'Delete Product'}
+                        <div className="pt-4 space-y-4">
+                            <button type="submit" disabled={isSubmitting || isActing} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold bg-brand-gold text-brand-dark hover:bg-brand-gold-dark transition-colors duration-300 uppercase disabled:opacity-50">
+                                {isSubmitting ? 'Saving...' : 'Save Changes'}
                             </button>
+                             <div className="border-t border-brand-gold/20 pt-4">
+                                <h3 className="font-serif text-lg text-red-500/80 mb-2">Danger Zone</h3>
+                                <button type="button" onClick={handleDelete} disabled={isActing || isSubmitting} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors duration-300 uppercase disabled:opacity-50">
+                                    {isActing ? 'Deleting...' : 'Delete Product'}
+                                </button>
+                            </div>
                         </div>
-                      </div>
                     </form>
                 </div>
             </div>
-        </AdminLayout>
+        </SellerLayout>
     );
 };
 
-export default AdminEditProductPage;
+export default SellerEditProductPage;

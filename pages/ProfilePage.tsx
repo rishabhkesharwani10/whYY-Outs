@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
@@ -72,8 +73,11 @@ const ProfilePage: React.FC = () => {
                  <ReactRouterDOM.Link to="/edit-profile" className="text-center font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold/50 text-brand-light/80 hover:bg-brand-gold/10 hover:text-white transition-colors duration-300 uppercase">
                     Edit Profile
                   </ReactRouterDOM.Link>
-                  <ReactRouterDOM.Link to="/order-history" className="text-center font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase">
+                  <ReactRouterDOM.Link to="/order-history" className="text-center font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold/50 text-brand-light/80 hover:bg-brand-gold/10 hover:text-white transition-colors duration-300 uppercase">
                     Order History
+                  </ReactRouterDOM.Link>
+                   <ReactRouterDOM.Link to="/wishlist" className="text-center font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase">
+                    My Wishlist
                   </ReactRouterDOM.Link>
                   {isAdmin && (
                     <ReactRouterDOM.Link to="/admin" className="text-center font-sans text-sm tracking-widest px-8 py-3 border border-yellow-400 bg-yellow-400 text-brand-dark hover:bg-yellow-500 transition-colors duration-300 uppercase font-bold">

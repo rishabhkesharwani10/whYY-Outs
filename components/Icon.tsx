@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-type IconName = 'cart' | 'user' | 'search' | 'star-filled' | 'star-empty' | 'plus' | 'minus' | 'trash' | 'chevron-down' | 'logo' | 'check' | 'wishlist' | 'offer' | 'truck' | 'microphone' | 'home' | 'category' | 'chevron-left' | 'chevron-right' | 'camera' | 'wallet' | 'gem' | 'ar' | 'live' | 'gift' | 'game-controller' | 'secure-payment' | 'map-pin' | 'sparkles' | 'book-open' | 'flower' | 'plane' | 'filter';
+type IconName = 'cart' | 'user' | 'search' | 'star-filled' | 'star-empty' | 'plus' | 'minus' | 'trash' | 'chevron-down' | 'logo' | 'check' | 'wishlist' | 'wishlist-filled' | 'offer' | 'truck' | 'microphone' | 'home' | 'category' | 'chevron-left' | 'chevron-right' | 'camera' | 'wallet' | 'gem' | 'ar' | 'live' | 'gift' | 'game-controller' | 'secure-payment' | 'map-pin' | 'sparkles' | 'book-open' | 'flower' | 'plane' | 'filter' | 'return' | 'analytics';
 
 interface IconProps {
   name: IconName;
@@ -55,6 +55,9 @@ const ICONS: Record<IconName, React.ReactNode> = {
      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
   ),
   'wishlist': (
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+  ),
+  'wishlist-filled': (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
   ),
   'offer': (
@@ -119,6 +122,12 @@ const ICONS: Record<IconName, React.ReactNode> = {
   ),
   'filter': (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M7 12h10M11 20h2" />
+  ),
+  'return': (
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L8 9l11 4-5 2zm0 0l5 5M7.188 8.812a9.025 9.025 0 0112.728 0M2 2l20 20" />
+  ),
+  'analytics': (
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2M4 4h16v16H4V4z" />
   )
 };
 
@@ -127,6 +136,14 @@ const Icon: React.FC<IconProps> = ({ name, className = 'w-6 h-6' }) => {
 
   if (name === 'logo') {
     return <div className={className}>{icon}</div>
+  }
+  
+  if (name === 'wishlist-filled') {
+     return (
+        <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+            {icon}
+        </svg>
+     )
   }
 
   return (

@@ -1,11 +1,9 @@
 
-
 import React, { useState } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
-import BackButton from '../components/BackButton.tsx';
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -34,12 +32,9 @@ const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
-      <Header />
+      <Header showSearch={false} />
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-md">
-          <div className="mb-6">
-            <BackButton />
-          </div>
           <div className="bg-brand-dark p-8 rounded-lg border border-brand-gold/20 shadow-lg shadow-brand-gold/10">
             <h1 className="font-serif text-4xl text-center text-brand-light mb-2">
               Reset Password

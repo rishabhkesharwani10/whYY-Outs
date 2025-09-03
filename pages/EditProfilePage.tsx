@@ -6,7 +6,7 @@ import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import BackButton from '../components/BackButton.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
-import type { User } from '../types.ts';
+import type { AuthenticatedUser } from '../types.ts';
 import Icon from '../components/Icon.tsx';
 
 const EditProfilePage: React.FC = () => {
@@ -73,7 +73,7 @@ const EditProfilePage: React.FC = () => {
     e.preventDefault();
     if (!user) return;
 
-    const updatedData: Partial<User> = {
+    const updatedData: Partial<AuthenticatedUser> = {
       fullName,
       phone,
       address,

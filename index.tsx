@@ -6,6 +6,8 @@ import { AuthProvider } from './context/AuthContext.tsx';
 import { CartProvider } from './context/CartContext.tsx';
 import { ProductProvider } from './context/ProductContext.tsx';
 import { OrderProvider } from './context/OrderContext.tsx';
+import { AICopilotProvider } from './context/AICopilotContext.tsx';
+import { WishlistProvider } from './context/WishlistContext.tsx';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -18,11 +20,15 @@ root.render(
     <ReactRouterDOM.HashRouter>
       <AuthProvider>
         <ProductProvider>
-          <CartProvider>
-            <OrderProvider>
-              <App />
-            </OrderProvider>
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <OrderProvider>
+                <AICopilotProvider>
+                  <App />
+                </AICopilotProvider>
+              </OrderProvider>
+            </CartProvider>
+          </WishlistProvider>
         </ProductProvider>
       </AuthProvider>
     </ReactRouterDOM.HashRouter>
