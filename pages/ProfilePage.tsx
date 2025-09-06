@@ -1,6 +1,3 @@
-
-
-
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
@@ -8,9 +5,10 @@ import Footer from '../components/Footer.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import Icon from '../components/Icon.tsx';
 import BackButton from '../components/BackButton.tsx';
+import type { Seller } from '../types.ts';
 
 const ProfilePage: React.FC = () => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, loading } = useAuth();
   const navigate = ReactRouterDOM.useNavigate();
 
   const handleLogout = () => {
@@ -18,18 +16,45 @@ const ProfilePage: React.FC = () => {
     navigate('/');
   };
 
-  if (!user) {
-    // This should ideally not be reached due to ProtectedRoute, but it's a good fallback.
+  if (loading || !user) {
+    // This guard prevents crashes by showing a loading state until the user object is fully available.
     return (
-      <div className="bg-brand-dark text-brand-light min-h-screen flex items-center justify-center">
-        <p>Loading user profile...</p>
+      <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="flex items-center gap-3 text-brand-gold">
+            <div className="w-8 h-8 border-2 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin"></div>
+            <span>Loading user profile...</span>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
   
-  const fullAddress = (user.address || user.pincode)
-    ? `${user.address || ''} ${user.pincode || ''}`.trim()
-    : 'No address provided.';
+  const renderAddress = () => {
+    const { addressLine1, addressLine2, city, state, zip, country } = user;
+    const hasAddress = addressLine1 || city || zip || country;
+
+    if (!hasAddress) {
+      return <span className="text-brand-light/90">No address provided.</span>;
+    }
+
+    return (
+      <div className="text-brand-light/90">
+        {addressLine1 && <p>{addressLine1}</p>}
+        {addressLine2 && <p>{addressLine2}</p>}
+        {(city || state || zip) && <p>{city}{city && state && ', '}{state} - {zip}</p>}
+        {country && <p>{country}</p>}
+      </div>
+    );
+  };
+  
+  const displayGender = (gender: string | undefined) => {
+    if (!gender) return 'Not provided';
+    if (gender === 'prefer_not_to_say') return 'Prefer not to say';
+    return gender.charAt(0).toUpperCase() + gender.slice(1);
+  };
 
 
   return (
@@ -56,17 +81,41 @@ const ProfilePage: React.FC = () => {
               
               <div className="mt-6 border-t border-brand-gold/20 pt-6 space-y-4 text-left">
                 <div className="flex items-start">
-                  <span className="font-semibold text-brand-gold w-24 flex-shrink-0">Email:</span>
+                  <span className="font-semibold text-brand-gold w-28 flex-shrink-0">Email:</span>
                   <span className="text-brand-light/90">{user.email}</span>
                 </div>
                 <div className="flex items-start">
-                  <span className="font-semibold text-brand-gold w-24 flex-shrink-0">Phone:</span>
+                  <span className="font-semibold text-brand-gold w-28 flex-shrink-0">Phone:</span>
                   <span className="text-brand-light/90">{user.phone || 'Not provided'}</span>
                 </div>
                 <div className="flex items-start">
-                  <span className="font-semibold text-brand-gold w-24 flex-shrink-0">Address:</span>
-                  <span className="text-brand-light/90">{fullAddress}</span>
+                  <span className="font-semibold text-brand-gold w-28 flex-shrink-0">Gender:</span>
+                  <span className="text-brand-light/90">{displayGender(user.gender)}</span>
                 </div>
+                <div className="flex items-start">
+                  <span className="font-semibold text-brand-gold w-28 flex-shrink-0">Address:</span>
+                  {renderAddress()}
+                </div>
+                {user.role === 'seller' && (
+                  <>
+                    <div className="flex items-start">
+                      <span className="font-semibold text-brand-gold w-28 flex-shrink-0">Business Name:</span>
+                      <span className="text-brand-light/90">{(user as Seller).businessName || 'Not provided'}</span>
+                    </div>
+                     <div className="flex items-start">
+                      <span className="font-semibold text-brand-gold w-28 flex-shrink-0">PAN:</span>
+                      <span className="text-brand-light/90">{(user as Seller).panNumber || 'Not provided'}</span>
+                    </div>
+                     <div className="flex items-start">
+                      <span className="font-semibold text-brand-gold w-28 flex-shrink-0">GSTIN:</span>
+                      <span className="text-brand-light/90">{(user as Seller).gstNumber || 'Not provided'}</span>
+                    </div>
+                     <div className="flex items-start">
+                      <span className="font-semibold text-brand-gold w-28 flex-shrink-0">Reg. Number:</span>
+                      <span className="text-brand-light/90">{(user as Seller).registrationNumber || 'Not provided'}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-4">

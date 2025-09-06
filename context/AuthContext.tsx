@@ -1,148 +1,236 @@
-import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react';
-import type { AuthenticatedUser, Customer, Seller } from '../types.ts';
+import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { supabase } from '../supabase.ts';
-
-const mapSupabaseCustomer = (supabaseUser: any, profile: any): Omit<Customer, 'role'> => ({
-    id: supabaseUser.id || profile?.id,
-    email: supabaseUser.email || profile?.email || '',
-    fullName: profile?.full_name || '',
-    phone: profile?.phone || '',
-    address: profile?.address || '',
-    pincode: profile?.pincode || '',
-    avatar_url: profile?.avatar_url,
-    createdAt: profile?.created_at,
-});
-
-const mapSupabaseSeller = (supabaseUser: any, profile: any): Omit<Seller, 'role'> => ({
-    id: supabaseUser.id || profile?.id,
-    email: supabaseUser.email || profile?.email || '',
-    fullName: profile?.full_name || '',
-    phone: profile?.phone || '',
-    address: profile?.address || '',
-    pincode: profile?.pincode || '',
-    avatar_url: profile?.avatar_url,
-    panNumber: profile?.pan_number,
-    gstNumber: profile?.gst_number,
-    createdAt: profile?.created_at,
-});
-
+import type { AuthenticatedUser, Customer, Seller, Admin } from '../types.ts';
+// FIX: `User` and `AuthError` types are not exported from the top-level `supabase-js` package in some versions/environments.
+// Importing them directly from `@supabase/auth-js` resolves the module resolution issue.
+import type { User, AuthError } from '@supabase/auth-js';
 
 interface AuthContextType {
-  isAuthenticated: boolean;
   user: AuthenticatedUser | null;
+  isAuthenticated: boolean;
   isAdmin: boolean;
-  allUsers: AuthenticatedUser[];
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ error: any | null }>;
-  logout: () => Promise<void>;
-  register: (fullName: string, email: string, password: string, role: 'customer' | 'seller', panNumber?: string, gstNumber?: string, address?: string, pincode?: string) => Promise<{ error: any | null }>;
-  updateUser: (updatedData: Partial<AuthenticatedUser>) => Promise<void>;
-  sendPasswordResetEmail: (email: string) => Promise<{ error: any | null }>;
+  login: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  logout: () => Promise<{ error: AuthError | null }>;
+  register: (fullName: string, email: string, password: string, role: 'customer' | 'seller', panNumber?: string, gstNumber?: string, address?: string, pincode?: string, businessName?: string, registrationNumber?: string) => Promise<{ error: AuthError | null }>;
+  updateUser: (updates: Partial<AuthenticatedUser>) => Promise<{ error: any | null }>;
+  sendPasswordResetEmail: (email: string) => Promise<{ error: AuthError | null }>;
+  allUsers: (Customer | Seller)[];
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
-  const [allUsers, setAllUsers] = useState<AuthenticatedUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allUsers, setAllUsers] = useState<(Customer | Seller)[]>([]);
 
-  const isAdmin = useMemo(() => user?.email === 'whyyouts@gmail.com', [user]);
+  const fetchUserProfile = useCallback(async (authUser: User | null): Promise<AuthenticatedUser | null> => {
+    if (!authUser) return null;
 
-  const fetchAllUsers = useCallback(async () => {
-    const { data: customersData, error: customersError } = await supabase.from('customers').select('*');
-    if (customersError) console.error('Error fetching customers:', customersError);
+    // Handle special admin case first to bypass all other profile lookups
+    if (authUser.email === 'whyyouts@gmail.com') {
+        return {
+            id: authUser.id,
+            email: authUser.email,
+            fullName: 'Admin User',
+            role: 'admin',
+        } as Admin;
+    }
 
-    const { data: sellersData, error: sellersError } = await supabase.from('sellers').select('*');
-    if (sellersError) console.error('Error fetching sellers:', sellersError);
+    // Attempt to fetch existing profile from 'customers'
+    const { data: customerData } = await supabase.from('customers').select('*').eq('id', authUser.id).single();
+    if (customerData) {
+      return {
+        id: customerData.id,
+        email: customerData.email,
+        fullName: customerData.full_name,
+        phone: customerData.phone,
+        addressLine1: customerData.address_line_1,
+        addressLine2: customerData.address_line_2,
+        city: customerData.city,
+        state: customerData.state,
+        country: customerData.country,
+        zip: customerData.zip,
+        avatar_url: customerData.avatar_url,
+        createdAt: customerData.created_at,
+        gender: customerData.gender,
+        role: 'customer'
+      };
+    }
+
+    // Attempt to fetch existing profile from 'sellers'
+    const { data: sellerData } = await supabase.from('sellers').select('*').eq('id', authUser.id).single();
+    if (sellerData) {
+      return {
+          id: sellerData.id,
+          email: sellerData.email,
+          fullName: sellerData.full_name,
+          phone: sellerData.phone,
+          addressLine1: sellerData.address_line_1,
+          addressLine2: sellerData.address_line_2,
+          city: sellerData.city,
+          state: sellerData.state,
+          country: sellerData.country,
+          zip: sellerData.zip,
+          avatar_url: sellerData.avatar_url,
+          createdAt: sellerData.created_at,
+          gender: sellerData.gender,
+          role: 'seller',
+          businessName: sellerData.business_name,
+          panNumber: sellerData.pan_number,
+          gstNumber: sellerData.gst_number,
+          registrationNumber: sellerData.registration_number
+      };
+    }
+
+    // SELF-HEALING: If no profile exists, try to create one.
+    const metadata = authUser.user_metadata || {};
+    const { role, full_name, pan_number, gst_number, address_line_1, zip, business_name, registration_number } = metadata;
+
+    // Case 1: Metadata exists (ideal self-healing)
+    if (role && full_name) {
+      console.warn(`User profile for ${authUser.email} not found. Attempting to create one from auth metadata.`);
+      const commonData = {
+          id: authUser.id,
+          email: authUser.email,
+          full_name,
+          address_line_1,
+          zip,
+      };
+
+      if (role === 'customer') {
+          const { data: newCustomer, error } = await supabase.from('customers').insert(commonData).select().single();
+          if (!error && newCustomer) {
+              console.log(`Successfully created customer profile for ${authUser.email}`);
+              return {
+                id: newCustomer.id, email: newCustomer.email, fullName: newCustomer.full_name, phone: newCustomer.phone,
+                addressLine1: newCustomer.address_line_1, addressLine2: newCustomer.address_line_2, city: newCustomer.city,
+                state: newCustomer.state, country: newCustomer.country, zip: newCustomer.zip, avatar_url: newCustomer.avatar_url,
+                createdAt: newCustomer.created_at, gender: newCustomer.gender, role: 'customer'
+              };
+          }
+          if(error) console.error('Failed to self-heal customer profile with metadata:', error);
+
+      } else if (role === 'seller') {
+          const { data: newSeller, error } = await supabase.from('sellers').insert({ ...commonData, pan_number, gst_number, business_name, registration_number }).select().single();
+          if (!error && newSeller) {
+              console.log(`Successfully created seller profile for ${authUser.email}`);
+              return {
+                id: newSeller.id, email: newSeller.email, fullName: newSeller.full_name, phone: newSeller.phone,
+                addressLine1: newSeller.address_line_1, addressLine2: newSeller.address_line_2, city: newSeller.city,
+                state: newSeller.state, country: newSeller.country, zip: newSeller.zip, avatar_url: newSeller.avatar_url,
+                createdAt: newSeller.created_at, gender: newSeller.gender, role: 'seller', 
+                businessName: newSeller.business_name, panNumber: newSeller.pan_number, gstNumber: newSeller.gst_number, registrationNumber: newSeller.registration_number
+              };
+          }
+          if(error) console.error('Failed to self-heal seller profile with metadata:', error);
+      }
+    } else {
+      // Case 2: Metadata is missing (fallback self-healing for legacy accounts)
+      console.warn(`User profile for ${authUser.email} not found and metadata is missing. Creating a default customer profile.`);
+      const { data: newCustomer, error } = await supabase
+          .from('customers')
+          .insert({
+              id: authUser.id,
+              email: authUser.email,
+              full_name: authUser.email?.split('@')[0] || 'New User'
+          })
+          .select()
+          .single();
+      
+      if (!error && newCustomer) {
+          console.log(`Successfully created default customer profile for ${authUser.email}`);
+          return {
+            id: newCustomer.id, email: newCustomer.email, fullName: newCustomer.full_name, phone: newCustomer.phone,
+            addressLine1: newCustomer.address_line_1, addressLine2: newCustomer.address_line_2, city: newCustomer.city,
+            state: newCustomer.state, country: newCustomer.country, zip: newCustomer.zip, avatar_url: newCustomer.avatar_url,
+            createdAt: newCustomer.created_at, gender: newCustomer.gender, role: 'customer'
+          };
+      }
+      if (error) {
+        console.error('Failed to self-heal with default customer profile:', error);
+      }
+    }
     
-    const combinedUsers: AuthenticatedUser[] = [];
-    if (customersData) {
-        combinedUsers.push(...customersData.map(p => ({ ...mapSupabaseCustomer({}, p), role: 'customer' })));
-    }
-    if (sellersData) {
-        combinedUsers.push(...sellersData.map(p => ({ ...mapSupabaseSeller({}, p), role: 'seller' })));
-    }
-    setAllUsers(combinedUsers);
+    // If all attempts fail, return null
+    return null;
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session && session.user) {
-        let currentUser: AuthenticatedUser | null = null;
-        
-        // 1. Check customers table
-        const { data: customerProfile } = await supabase.from('customers').select('*').eq('id', session.user.id).single();
-        
-        if (customerProfile) {
-          currentUser = { ...mapSupabaseCustomer(session.user, customerProfile), role: 'customer' };
-        } else {
-          // 2. If not a customer, check sellers table
-          const { data: sellerProfile } = await supabase.from('sellers').select('*').eq('id', session.user.id).single();
-          if (sellerProfile) {
-            currentUser = { ...mapSupabaseSeller(session.user, sellerProfile), role: 'seller' };
-          } else {
-             // 3. Fallback for registration race condition
-            console.warn("Profile not found in 'customers' or 'sellers'. Falling back to session user_metadata.");
-            const metadata = session.user.user_metadata;
-            if (metadata.role === 'seller') {
-              currentUser = { ...mapSupabaseSeller(session.user, { id: session.user.id, ...metadata }), role: 'seller' };
-            } else {
-              currentUser = { ...mapSupabaseCustomer(session.user, { id: session.user.id, ...metadata }), role: 'customer' };
-            }
-          }
-        }
-        
-        setUser(currentUser);
-
-        if (currentUser && currentUser.email === 'whyyouts@gmail.com') {
-          await fetchAllUsers();
-        }
-
-      } else {
-        setUser(null);
-        setAllUsers([]);
-      }
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUser = session?.user || null;
+      const profile = await fetchUserProfile(authUser);
+      setUser(profile);
       setLoading(false);
+    };
+
+    checkUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const authUser = session?.user || null;
+      const profile = await fetchUserProfile(authUser);
+      setUser(profile);
+      if (_event === 'INITIAL_SESSION') {
+        setLoading(false);
+      }
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      authListener?.subscription.unsubscribe();
     };
-  }, [fetchAllUsers]);
+  }, [fetchUserProfile]);
+  
+  const isAdmin = useMemo(() => user?.role === 'admin', [user]);
+
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+        if (isAdmin) {
+            const { data: customers } = await supabase.from('customers').select('*');
+            const { data: sellers } = await supabase.from('sellers').select('*');
+            const all = [
+                ...(customers || []).map(c => ({ ...c, fullName: c.full_name, createdAt: c.created_at, role: 'customer' as const })),
+                ...(sellers || []).map(s => ({ ...s, fullName: s.full_name, createdAt: s.created_at, role: 'seller' as const }))
+            ];
+            setAllUsers(all);
+        }
+    };
+    if (user) {
+        fetchAllUsers();
+    }
+  }, [user, isAdmin]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      return { error };
+    }
+
+    if (data.user) {
+      const profile = await fetchUserProfile(data.user);
+      if (!profile) {
+        await supabase.auth.signOut();
+        return { 
+          error: { 
+            name: 'ProfileNotFound', 
+            message: 'Login successful, but a user profile could not be found. Please contact support.' 
+          } as AuthError 
+        };
+      }
+    }
+    
+    return { error: null };
+  }, [fetchUserProfile]);
+
+  const logout = useCallback(async () => {
+    const { error } = await supabase.auth.signOut();
+    setUser(null);
     return { error };
   }, []);
 
-  const logout = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, []);
-
-  const register = useCallback(async (fullName: string, email: string, password: string, role: 'customer' | 'seller', panNumber?: string, gstNumber?: string, address?: string, pincode?: string) => {
-    // To ensure clear separation, we first check if the email exists in the *other* user type's table.
-    const oppositeTable = role === 'customer' ? 'sellers' : 'customers';
-    const oppositeRole = role === 'customer' ? 'seller' : 'customer';
-
-    const { data: existingProfile, error: checkError } = await supabase
-      .from(oppositeTable)
-      .select('email')
-      .eq('email', email)
-      .single();
-
-    // 'PGRST116' is the code for 'No rows found', which is the expected outcome if the email is new.
-    // Any other error is an actual problem.
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error(`Error checking for existing user in ${oppositeTable}:`, checkError);
-      return { error: { message: 'An internal error occurred. Please try again later.' } as any };
-    }
-    
-    if (existingProfile) {
-      return { error: { message: `This email is already registered as a ${oppositeRole}. Please use a different email or log in.` } as any };
-    }
-
+  const register = useCallback(async (fullName: string, email: string, password: string, role: 'customer' | 'seller', panNumber?: string, gstNumber?: string, address?: string, pincode?: string, businessName?: string, registrationNumber?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -152,73 +240,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: role,
           pan_number: panNumber,
           gst_number: gstNumber,
-          phone: '',
-          address: address || '',
-          pincode: pincode || '',
-          avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=BFA181&color=101010&size=128`
-        }
-      }
+          address_line_1: address,
+          zip: pincode,
+          business_name: businessName,
+          registration_number: registrationNumber,
+        },
+      },
     });
-    
-    // Supabase itself prevents duplicate emails in the main auth table. 
-    // This provides a more user-friendly message if they try to sign up again with the same role.
-    if (error && error.message.includes("User already registered")) {
-      return { error: { message: `An account with this email already exists as a ${role}. Please log in.` } as any };
-    }
 
     return { error };
   }, []);
-  
-  const updateUser = useCallback(async (updatedData: Partial<AuthenticatedUser>) => {
-    if (!user) return;
 
-    const tableName = user.role === 'seller' ? 'sellers' : 'customers';
-
-    const profileData: { [key: string]: any } = {
-      full_name: updatedData.fullName,
-      phone: updatedData.phone,
-      address: updatedData.address,
-      pincode: updatedData.pincode,
-      avatar_url: updatedData.avatar_url
-    };
-
-    // Remove undefined keys so they don't overwrite existing data in Supabase
-    Object.keys(profileData).forEach(key => profileData[key] === undefined && delete profileData[key]);
+  const updateUser = useCallback(async (updates: Partial<AuthenticatedUser>) => {
+    if (!user || user.role === 'admin') return { error: { message: 'Cannot update this user type.' } };
     
-    const { data, error } = await supabase
-      .from(tableName)
-      .update(profileData)
-      .eq('id', user.id)
-      .select()
-      .single();
+    const table = user.role === 'customer' ? 'customers' : 'sellers';
+    const updateData: { [key: string]: any } = {};
 
-    if (error) {
-        console.error(`Error updating profile in ${tableName}:`, error);
-    } else if (data) {
-        // Update local state with the new data
-        setUser(prevUser => ({...prevUser!, ...updatedData}));
+    // Map camelCase to snake_case for Supabase
+    if (updates.fullName !== undefined) updateData.full_name = updates.fullName;
+    if (updates.phone !== undefined) updateData.phone = updates.phone;
+    if (updates.addressLine1 !== undefined) updateData.address_line_1 = updates.addressLine1;
+    if (updates.addressLine2 !== undefined) updateData.address_line_2 = updates.addressLine2;
+    if (updates.city !== undefined) updateData.city = updates.city;
+    if (updates.state !== undefined) updateData.state = updates.state;
+    if (updates.country !== undefined) updateData.country = updates.country;
+    if (updates.zip !== undefined) updateData.zip = updates.zip;
+    if (updates.gender !== undefined) updateData.gender = updates.gender;
+    if (updates.avatar_url !== undefined) updateData.avatar_url = updates.avatar_url;
+
+    // Seller-specific fields
+    if (user.role === 'seller') {
+      const sellerUpdates = updates as Partial<Seller>;
+      if (sellerUpdates.businessName !== undefined) updateData.business_name = sellerUpdates.businessName;
+      if (sellerUpdates.panNumber !== undefined) updateData.pan_number = sellerUpdates.panNumber;
+      if (sellerUpdates.gstNumber !== undefined) updateData.gst_number = sellerUpdates.gstNumber;
+      if (sellerUpdates.registrationNumber !== undefined) updateData.registration_number = sellerUpdates.registrationNumber;
     }
-  }, [user]);
-  
+
+    const { error } = await supabase.from(table).update(updateData).eq('id', user.id);
+
+    if (!error) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        const updatedProfile = await fetchUserProfile(authUser);
+        setUser(updatedProfile);
+    }
+
+    return { error };
+  }, [user, fetchUserProfile]);
+
   const sendPasswordResetEmail = useCallback(async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/#/login`,
+      redirectTo: `${window.location.origin}/`,
     });
     return { error };
   }, []);
 
   const value = useMemo(() => ({
-    isAuthenticated: !!user,
     user,
+    isAuthenticated: !!user,
     isAdmin,
-    allUsers,
     loading,
     login,
     logout,
     register,
     updateUser,
     sendPasswordResetEmail,
-  }), [user, isAdmin, allUsers, loading, login, logout, register, updateUser, sendPasswordResetEmail]);
+    allUsers,
+  }), [user, loading, isAdmin, allUsers, login, logout, register, updateUser, sendPasswordResetEmail]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

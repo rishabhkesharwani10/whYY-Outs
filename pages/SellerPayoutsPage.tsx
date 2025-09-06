@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
-import SellerLayout from '../../components/SellerLayout.tsx';
-import type { Payout, SellerBankDetails, Seller } from '../../types.ts';
-import { supabase } from '../../supabase.ts';
-import { useAuth } from '../../context/AuthContext.tsx';
-import BackButton from '../../components/BackButton.tsx';
+import SellerLayout from '../components/SellerLayout.tsx';
+import type { Payout, SellerBankDetails } from '../types.ts';
+import { supabase } from '../supabase.ts';
+import { useAuth } from '../context/AuthContext.tsx';
+import BackButton from '../components/BackButton.tsx';
 
 // NOTE: Payout history is now empty by default. In a real application, a backend process
 // would generate these records based on sales and transfer them to the seller's bank.
@@ -73,14 +73,6 @@ const SellerPayoutsPage: React.FC = () => {
         return status === 'Completed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400';
     };
 
-    const sellerUser = user as Seller;
-    const isProfileComplete = 
-        sellerUser.businessName &&
-        sellerUser.panNumber &&
-        bankDetails.bank_name &&
-        bankDetails.account_number &&
-        bankDetails.ifsc_code;
-
     const formInputClass = "mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all";
     const formLabelClass = "block text-sm font-medium text-brand-gold tracking-wider uppercase";
 
@@ -92,16 +84,6 @@ const SellerPayoutsPage: React.FC = () => {
                 </div>
                 <h1 className="font-serif text-4xl text-brand-light">Payouts</h1>
                 <p className="text-brand-light/70 mt-1">Manage your bank details and view payout history.</p>
-
-                {!isProfileComplete && !loading && (
-                    <div className="mt-8 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 p-6 rounded-lg">
-                        <h3 className="font-bold text-lg">Action Required: Complete Your Profile</h3>
-                        <p className="mt-2 text-sm">To receive payouts for your sales, you must provide your complete business and bank details. Please update your profile with all required information.</p>
-                        <ReactRouterDOM.Link to="/edit-profile" className="inline-block mt-4 font-bold text-sm bg-yellow-400 text-brand-dark px-4 py-2 rounded-md hover:bg-yellow-500 transition-colors">
-                            Go to Edit Profile &rarr;
-                        </ReactRouterDOM.Link>
-                    </div>
-                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                     <div className="lg:col-span-1">

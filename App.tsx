@@ -1,7 +1,4 @@
 
-
-
-
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useAuth } from './context/AuthContext.tsx';
@@ -29,18 +26,83 @@ import AdminProductsPage from './pages/admin/AdminProductsPage.tsx';
 import AdminEditProductPage from './pages/admin/AdminEditProductPage.tsx';
 import AdminUsersPage from './pages/admin/AdminUsersPage.tsx';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage.tsx';
+import AdminCouponsPage from './pages/admin/AdminCouponsPage.tsx';
+import AdminReturnsPage from './pages/admin/AdminReturnsPage.tsx';
 import NotFoundPage from './pages/NotFoundPage.tsx';
 import AICopilotModal from './components/AICopilotModal.tsx';
 import AIPilotFAB from './components/AIPilotFAB.tsx';
 import WishlistPage from './pages/WishlistPage.tsx';
+import { useCart } from './hooks/useCart.ts';
+import Icon from './components/Icon.tsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.tsx';
+import TermsOfUsePage from './pages/TermsOfUsePage.tsx';
 
 // Seller Pages
-import SellerDashboardPage from './pages/seller/SellerDashboardPage.tsx';
-import SellerProductsPage from './pages/seller/SellerProductsPage.tsx';
-import SellerEditProductPage from './pages/seller/SellerEditProductPage.tsx';
-import SellerOrdersPage from './pages/seller/SellerOrdersPage.tsx';
-import SellerReturnsPage from './pages/seller/SellerReturnsPage.tsx';
-import SellerPayoutsPage from './pages/seller/SellerPayoutsPage.tsx';
+import SellerDashboardPage from './pages/SellerDashboardPage.tsx';
+import SellerProductsPage from './pages/SellerProductsPage.tsx';
+import SellerEditProductPage from './pages/SellerEditProductPage.tsx';
+import SellerOrdersPage from './pages/SellerOrdersPage.tsx';
+import SellerPayoutsPage from './pages/SellerPayoutsPage.tsx';
+import SellerReturnsPage from './pages/SellerReturnsPage.tsx';
+
+
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  React.useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const success = type === 'success';
+  const bgColor = success ? 'bg-green-600/90' : 'bg-red-600/90';
+  const borderColor = success ? 'border-green-400' : 'border-red-400';
+  const title = success ? "Success" : "Notice";
+
+  return (
+    <div
+      className={`fixed bottom-24 right-4 md:bottom-8 md:right-8 w-80 max-w-[90vw] p-4 rounded-lg shadow-2xl z-[100] border ${borderColor} ${bgColor} backdrop-blur-sm text-white page-fade-in`}
+      role="alert"
+    >
+      <div className="flex items-start gap-3">
+        {success && <Icon name="check" className="w-5 h-5 mt-0.5 text-white flex-shrink-0" />}
+        <div className="flex-grow">
+          <p className="font-bold">{title}</p>
+          <p className="text-sm mt-1">{message}</p>
+          {success && (
+            <ReactRouterDOM.Link
+              to="/cart"
+              onClick={onClose}
+              className="inline-block mt-2 text-sm font-bold underline hover:text-brand-gold-light"
+            >
+              View Cart &rarr;
+            </ReactRouterDOM.Link>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          className="text-white/70 hover:text-white flex-shrink-0 -mt-1 -mr-1 p-1"
+          aria-label="Close notification"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+const ToastContainer: React.FC = () => {
+    const { toast, hideToast } = useCart();
+    if (!toast) return null;
+    return <Toast message={toast.message} type={toast.type} onClose={hideToast} />;
+};
 
 
 const App: React.FC = () => {
@@ -61,6 +123,8 @@ const App: React.FC = () => {
         <ReactRouterDOM.Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <ReactRouterDOM.Route path="/shop" element={<ShopPage />} />
         <ReactRouterDOM.Route path="/product/:productId" element={<ProductDetailPage />} />
+        <ReactRouterDOM.Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <ReactRouterDOM.Route path="/terms-of-use" element={<TermsOfUsePage />} />
         
         {/* Protected Routes */}
         <ReactRouterDOM.Route element={<ProtectedRoute />}>
@@ -80,8 +144,8 @@ const App: React.FC = () => {
           <ReactRouterDOM.Route path="/add-product" element={<AddProductPage />} />
           <ReactRouterDOM.Route path="/seller/products/edit/:productId" element={<SellerEditProductPage />} />
           <ReactRouterDOM.Route path="/seller/orders" element={<SellerOrdersPage />} />
-          <ReactRouterDOM.Route path="/seller/returns" element={<SellerReturnsPage />} />
           <ReactRouterDOM.Route path="/seller/payouts" element={<SellerPayoutsPage />} />
+          <ReactRouterDOM.Route path="/seller/returns" element={<SellerReturnsPage />} />
         </ReactRouterDOM.Route>
 
         {/* Admin-only Protected Routes */}
@@ -91,10 +155,13 @@ const App: React.FC = () => {
           <ReactRouterDOM.Route path="/admin/products/edit/:productId" element={<AdminEditProductPage />} />
           <ReactRouterDOM.Route path="/admin/users" element={<AdminUsersPage />} />
           <ReactRouterDOM.Route path="/admin/orders" element={<AdminOrdersPage />} />
+          <ReactRouterDOM.Route path="/admin/coupons" element={<AdminCouponsPage />} />
+          <ReactRouterDOM.Route path="/admin/returns" element={<AdminReturnsPage />} />
         </ReactRouterDOM.Route>
 
         <ReactRouterDOM.Route path="*" element={<NotFoundPage />} />
       </ReactRouterDOM.Routes>
+      <ToastContainer />
       <AICopilotModal />
       <AIPilotFAB />
     </>

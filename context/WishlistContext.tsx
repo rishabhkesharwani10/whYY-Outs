@@ -6,6 +6,7 @@ import type { Product } from '../types.ts';
 
 interface WishlistContextType {
   wishlistItems: Product[];
+  loading: boolean;
   addToWishlist: (productId: string) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
@@ -14,31 +15,35 @@ interface WishlistContextType {
 export const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
-  const { products } = useProducts();
+  const { user, loading: authLoading } = useAuth();
+  const { products, loading: productsLoading } = useProducts();
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
+  const [wishlistFetchLoading, setWishlistFetchLoading] = useState(true);
 
   // Fetch wishlist from Supabase when user is authenticated
   useEffect(() => {
     if (user) {
       const fetchWishlist = async () => {
+        setWishlistFetchLoading(true);
         const { data, error } = await supabase
           .from('wishlist')
           .select('product_id')
           .eq('user_id', user.id);
         
         if (error) {
-          console.error("Error fetching wishlist:", error);
+          console.error("Error fetching wishlist:", JSON.stringify(error, null, 2));
         } else if (data) {
           setWishlistProductIds(data.map(item => item.product_id));
         }
+        setWishlistFetchLoading(false);
       };
       fetchWishlist();
-    } else {
-      // Clear wishlist on logout
+    } else if (!authLoading) {
+      // Clear wishlist on logout or if no user after auth check
       setWishlistProductIds([]);
+      setWishlistFetchLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   // Derive full product objects from the main product list
   const wishlistItems = useMemo(() => {
@@ -47,6 +52,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     return products.filter(p => wishlistProductIds.includes(p.id));
   }, [products, wishlistProductIds]);
+  
+  const loading = productsLoading || wishlistFetchLoading;
 
   const addToWishlist = useCallback(async (productId: string) => {
     if (!user) {
@@ -63,7 +70,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     if (error) {
-      console.error("Error adding to wishlist:", error);
+      console.error("Error adding to wishlist:", JSON.stringify(error, null, 2));
       // Revert state on error
       setWishlistProductIds(prev => prev.filter(id => id !== productId));
     }
@@ -84,7 +91,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     if (error) {
-      console.error("Error removing from wishlist:", error);
+      console.error("Error removing from wishlist:", JSON.stringify(error, null, 2));
       // Revert state on error
       setWishlistProductIds(prev => [...prev, productId]);
     }
@@ -96,10 +103,11 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const value = useMemo(() => ({
     wishlistItems,
+    loading,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
-  }), [wishlistItems, addToWishlist, removeFromWishlist, isInWishlist]);
+  }), [wishlistItems, loading, addToWishlist, removeFromWishlist, isInWishlist]);
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 };

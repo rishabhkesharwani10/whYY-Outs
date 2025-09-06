@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout.tsx';
 import { supabase } from '../../supabase.ts';
 import type { Product } from '../../types.ts';
 import Icon from '../../components/Icon.tsx';
+import BackButton from '../../components/BackButton.tsx';
+import { useProducts } from '../../hooks/useProducts.ts';
 
 // Helper to map Supabase product (snake_case) to our app's Product type (camelCase)
 const mapSupabaseProduct = (product: any): Product => ({
@@ -25,6 +26,7 @@ const mapSupabaseProduct = (product: any): Product => ({
 
 const AdminProductsPage: React.FC = () => {
     const navigate = ReactRouterDOM.useNavigate();
+    const { deleteProduct } = useProducts();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -68,37 +70,10 @@ const AdminProductsPage: React.FC = () => {
 
     const handleDelete = async (product: Product) => {
         if (window.confirm(`Are you sure you want to permanently delete "${product.name}"?\nThis action cannot be undone.`)) {
-            // First, delete the associated image from storage.
-            if (product.image) {
-                try {
-                    const BUCKET_NAME = 'product-images';
-                    const imageUrl = new URL(product.image);
-                    const pathSegments = imageUrl.pathname.split('/');
-                    const bucketIndex = pathSegments.indexOf(BUCKET_NAME);
+            const { error: deleteError } = await deleteProduct(product);
 
-                    if (bucketIndex !== -1) {
-                        const filePath = decodeURIComponent(pathSegments.slice(bucketIndex + 1).join('/'));
-                        if (filePath) {
-                            const { error: storageError } = await supabase.storage.from(BUCKET_NAME).remove([filePath]);
-                            if (storageError && storageError.message !== 'The resource was not found') {
-                                console.error(`Error deleting product image: ${filePath}`, storageError);
-                                // Non-blocking error, alert user but proceed.
-                                alert(`Could not delete the product image, but will proceed to delete the product record. Error: ${storageError.message}`);
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error parsing or deleting product image:', e);
-                    // This is a blocking error if we can't parse the URL.
-                    alert('An error occurred while handling the product image. The product will not be deleted. Check console for details.');
-                    return; 
-                }
-            }
-
-            // Then, permanently delete the product from the database.
-            const { error: dbError } = await supabase.from('products').delete().eq('id', product.id);
-            if (dbError) {
-                alert(`Failed to delete product. \n\nError: ${dbError.message}\n\nThis may be due to Row Level Security (RLS) policies. Please ensure admins have DELETE permissions on the 'products' table.`);
+            if (deleteError) {
+                alert(`Failed to delete product. \n\nError: ${deleteError.message}\n\nThis may be due to Row Level Security (RLS) policies. Please ensure admins have DELETE permissions on the 'products' table.`);
             } else {
                 // If the deleted product was the last one on the current page (and it's not the first page), go back one page.
                 if (products.length === 1 && page > 1) {
@@ -116,6 +91,9 @@ const AdminProductsPage: React.FC = () => {
     return (
         <AdminLayout>
             <div className="page-fade-in">
+                <div className="mb-6">
+                    <BackButton fallback="/admin" />
+                </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <div>
                         <h1 className="font-serif text-4xl text-brand-light">Manage Products</h1>
@@ -178,7 +156,7 @@ const AdminProductsPage: React.FC = () => {
                                                 <p className="text-xs text-brand-light/60">ID: {product.id.substring(0, 8)}</p>
                                             </div>
                                         </td>
-                                        <td className="p-4">${product.price.toFixed(2)}</td>
+                                        <td className="p-4">₹{product.price.toFixed(2)}</td>
                                         <td className="p-4 capitalize">{product.categoryId}</td>
                                         <td className="p-4 text-right space-x-4">
                                             <button onClick={() => navigate(`/admin/products/edit/${product.id}`)} className="text-sm font-semibold text-brand-gold hover:underline">Edit</button>

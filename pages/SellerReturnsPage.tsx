@@ -1,11 +1,11 @@
 
 import React, { useState, useMemo } from 'react';
-import SellerLayout from '../../components/SellerLayout.tsx';
-import BackButton from '../../components/BackButton.tsx';
-import { useReturns } from '../../hooks/useReturns.ts';
-import { useAuth } from '../../context/AuthContext.tsx';
-import { useProducts } from '../../hooks/useProducts.ts';
-import type { ReturnRequest } from '../../types.ts';
+import SellerLayout from '../components/SellerLayout.tsx';
+import BackButton from '../components/BackButton.tsx';
+import { useReturns } from '../hooks/useReturns.ts';
+import { useAuth } from '../context/AuthContext.tsx';
+import { useProducts } from '../hooks/useProducts.ts';
+import type { ReturnRequest } from '../types.ts';
 
 const StatusUpdateModal: React.FC<{ request: ReturnRequest; action: 'Approve' | 'Reject'; onClose: () => void; }> = ({ request, action, onClose }) => {
     const [reason, setReason] = useState('');

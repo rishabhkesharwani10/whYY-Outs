@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Icon from './Icon.tsx';
@@ -35,6 +37,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <NavLink to="/admin/products" icon="category" label="Products" />
           <NavLink to="/admin/orders" icon="cart" label="Orders" />
           <NavLink to="/admin/users" icon="user" label="Users" />
+          <NavLink to="/admin/coupons" icon="offer" label="Coupons" />
+          <NavLink to="/admin/returns" icon="return" label="Returns" />
         </nav>
         <div className="mt-4 pt-4 border-t border-brand-gold/20 space-y-2">
           <ReactRouterDOM.Link to="/shop" className="flex items-center gap-3 px-4 py-2 rounded-md text-brand-light/70 hover:bg-brand-light/5 hover:text-white transition-colors">

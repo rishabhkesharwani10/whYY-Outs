@@ -7,17 +7,19 @@ import Footer from '../components/Footer.tsx';
 import BackButton from '../components/BackButton.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useOrders } from '../hooks/useOrders.ts';
+import type { Order } from '../types.ts';
 
 const OrderHistoryPage: React.FC = () => {
   const { user } = useAuth();
   const { orders } = useOrders();
   const userOrders = orders.filter(order => order.userId === user?.id);
 
-  const getStatusClass = (status: 'Processing' | 'Shipped' | 'Delivered') => {
+  const getStatusClass = (status: Order['status']) => {
     switch (status) {
       case 'Processing': return 'bg-yellow-500/20 text-yellow-400';
       case 'Shipped': return 'bg-blue-500/20 text-blue-400';
       case 'Delivered': return 'bg-green-500/20 text-green-400';
+      case 'Cancelled': return 'bg-red-500/20 text-red-400';
       default: return 'bg-gray-500/20 text-gray-400';
     }
   };
@@ -40,7 +42,12 @@ const OrderHistoryPage: React.FC = () => {
                   <div className="mb-4 sm:mb-0">
                     <h2 className="font-bold text-lg text-brand-light">Order #{order.id.split('-')[1]}</h2>
                     <p className="text-sm text-brand-light/70">Placed on: {new Date(order.orderDate).toLocaleDateString()}</p>
-                    <p className="text-sm text-brand-light/70">Total: ${order.totalPrice.toFixed(2)}</p>
+                    <p className="text-sm text-brand-light/70">Total: ₹{order.totalPrice.toFixed(2)}</p>
+                    {order.shippingTrackingNumber && (
+                      <p className="text-xs text-brand-light/60 mt-1">
+                        Tracking #: {order.shippingTrackingNumber}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusClass(order.status)}`}>

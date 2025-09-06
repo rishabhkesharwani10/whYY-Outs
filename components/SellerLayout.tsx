@@ -1,4 +1,3 @@
-
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Icon from './Icon.tsx';
@@ -35,8 +34,9 @@ const SellerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           <NavLink to="/seller-dashboard" icon="home" label="Dashboard" />
           <NavLink to="/seller/products" icon="category" label="Products" />
           <NavLink to="/seller/orders" icon="cart" label="Orders" />
-          <NavLink to="/seller/returns" icon="return" label="Returns" />
           <NavLink to="/seller/payouts" icon="wallet" label="Payouts" />
+          <NavLink to="/seller/returns" icon="return" label="Returns" />
+          <NavLink to="/edit-profile" icon="user" label="Edit Profile" />
         </nav>
         <div className="mt-4 pt-4 border-t border-brand-gold/20 space-y-2">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 rounded-md text-red-400/70 hover:bg-red-500/10 hover:text-red-400 transition-colors">

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 
 interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {}
@@ -15,7 +16,6 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, className, ...props }) 
         ([entry]) => {
           // When the placeholder enters the viewport, set the image source
           if (entry.isIntersecting) {
-            // FIX: Ensure src is a string before setting state to avoid type errors.
             if (typeof src === 'string') {
               setImageSrc(src);
             }

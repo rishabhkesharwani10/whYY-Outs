@@ -16,9 +16,9 @@ const ProductMessageCard: React.FC<{ product: Product }> = ({ product }) => (
     <div className="p-3">
       <h3 className="text-sm font-semibold text-brand-light truncate group-hover:text-brand-gold-light">{product.name}</h3>
       <div className="flex items-baseline mt-1">
-        <p className="text-md font-bold text-brand-light">${product.price.toFixed(2)}</p>
+        <p className="text-md font-bold text-brand-light">₹{product.price.toFixed(2)}</p>
         {product.originalPrice && (
-          <p className="text-xs text-brand-light/60 line-through ml-2">${product.originalPrice.toFixed(2)}</p>
+          <p className="text-xs text-brand-light/60 line-through ml-2">₹{product.originalPrice.toFixed(2)}</p>
         )}
       </div>
       <div className="flex items-center mt-1">
@@ -50,7 +50,7 @@ const AICopilotModal: React.FC = () => {
   };
   
   const suggestedPrompts = [
-    "Show me red dresses under $50",
+    "Show me red dresses under ₹5000",
     "What's the status of my last order?",
     "Recommend a gift for my friend"
   ];

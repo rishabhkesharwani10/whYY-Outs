@@ -1,4 +1,5 @@
 import React from 'react';
+import * as ReactRouterDOM from 'react-router-dom';
 import Icon from './Icon.tsx';
 
 const Footer: React.FC = () => {
@@ -46,11 +47,28 @@ const Footer: React.FC = () => {
             <div key={title}>
               <h3 className="uppercase tracking-widest text-brand-gold/80 font-semibold text-sm mb-4">{title}</h3>
               <ul className="space-y-2">
-                {items.map(item => (
-                  <li key={item}>
-                    <a href="#" className="text-sm text-brand-light/70 hover:text-white transition-colors duration-300">{item}</a>
-                  </li>
-                ))}
+                {items.map(item => {
+                  const className = "text-sm text-brand-light/70 hover:text-white transition-colors duration-300";
+                  if (item === 'Privacy') {
+                    return (
+                      <li key={item}>
+                        <ReactRouterDOM.Link to="/privacy-policy" className={className}>{item}</ReactRouterDOM.Link>
+                      </li>
+                    );
+                  }
+                  if (item === 'Terms Of Use') {
+                    return (
+                      <li key={item}>
+                        <ReactRouterDOM.Link to="/terms-of-use" className={className}>{item}</ReactRouterDOM.Link>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={item}>
+                      <a href="#" className={className}>{item}</a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

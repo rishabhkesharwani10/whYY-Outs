@@ -133,7 +133,6 @@ const AdminEditProductPage: React.FC = () => {
                 images: otherImages,
                 features: featuresInput.split('\n').filter(f => f.trim() !== ''),
                 sizes: sizesInput.split(',').map(s => s.trim()).filter(s => s !== ''),
-                // FIX: Convert empty string to undefined so Supabase receives null
                 expiryDate: formData.expiryDate || undefined,
             };
 
@@ -179,7 +178,6 @@ const AdminEditProductPage: React.FC = () => {
                     <h1 className="font-serif text-4xl text-brand-light mb-2">Edit Product</h1>
                     <p className="text-brand-light/70 mb-8 truncate">Updating "{product.name}"</p>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* FORM SECTIONS ARE IDENTICAL TO AddProductPage, but with value bindings from formData */}
                       <FormSection title="Basic Product Information">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div><label htmlFor="name" className={formLabelClass}>Product Name</label><input type="text" id="name" name="name" value={formData.name || ''} onChange={handleInputChange} required className={formInputClass} /></div>
@@ -190,7 +188,7 @@ const AdminEditProductPage: React.FC = () => {
                           <div><label htmlFor="description" className={formLabelClass}>Description</label><textarea id="description" name="description" value={formData.description || ''} onChange={handleInputChange} required rows={4} className={formInputClass} /></div>
                       </FormSection>
 
-                      <FormSection title="Product Identification">{/* SKU, UPC, Model */}<div className="grid grid-cols-1 md:grid-cols-3 gap-6"><div><label htmlFor="sku" className={formLabelClass}>SKU</label><input type="text" id="sku" name="sku" value={formData.sku || ''} onChange={handleInputChange} className={formInputClass} /></div><div><label htmlFor="upc" className={formLabelClass}>UPC/GTIN</label><input type="text" id="upc" name="upc" value={formData.upc || ''} onChange={handleInputChange} className={formInputClass} /></div><div><label htmlFor="modelNumber" className={formLabelClass}>Model Number</label><input type="text" id="modelNumber" name="modelNumber" value={formData.modelNumber || ''} onChange={handleInputChange} className={formInputClass} /></div></div></FormSection>
+                      <FormSection title="Product Identification"><div className="grid grid-cols-1 md:grid-cols-3 gap-6"><div><label htmlFor="sku" className={formLabelClass}>SKU</label><input type="text" id="sku" name="sku" value={formData.sku || ''} onChange={handleInputChange} className={formInputClass} /></div><div><label htmlFor="upc" className={formLabelClass}>UPC/GTIN</label><input type="text" id="upc" name="upc" value={formData.upc || ''} onChange={handleInputChange} className={formInputClass} /></div><div><label htmlFor="modelNumber" className={formLabelClass}>Model Number</label><input type="text" id="modelNumber" name="modelNumber" value={formData.modelNumber || ''} onChange={handleInputChange} className={formInputClass} /></div></div></FormSection>
 
                       <FormSection title="Media">
                         <div>
@@ -227,15 +225,15 @@ const AdminEditProductPage: React.FC = () => {
                       <FormSection title="Pricing & Stock">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                            <div>
-                              <label htmlFor="price" className={formLabelClass}>Selling Price ($)</label>
+                              <label htmlFor="price" className={formLabelClass}>Selling Price (₹)</label>
                               <input type="number" id="price" name="price" value={formData.price || ''} onChange={handleInputChange} required min="0" step="0.01" className={formInputClass}/>
                             </div>
                             <div>
-                              <label htmlFor="originalPrice" className={formLabelClass}>MRP / List Price ($)</label>
+                              <label htmlFor="originalPrice" className={formLabelClass}>MRP / List Price (₹)</label>
                               <input type="number" id="originalPrice" name="originalPrice" value={formData.originalPrice || ''} onChange={handleInputChange} min="0" step="0.01" className={formInputClass} />
                             </div>
                             <div>
-                              <label htmlFor="costPrice" className={formLabelClass}>Cost Price ($)</label>
+                              <label htmlFor="costPrice" className={formLabelClass}>Cost Price (₹)</label>
                               <input type="number" id="costPrice" name="costPrice" value={formData.costPrice || ''} onChange={handleInputChange} min="0" step="0.01" className={formInputClass} />
                             </div>
                              <div>

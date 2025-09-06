@@ -15,13 +15,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : 0;
 
   return (
-    <div className="group bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg shadow-brand-gold/10 hover:border-brand-gold/50 transition-all duration-300 overflow-hidden relative">
-      <ReactRouterDOM.Link to={`/product/${product.id}`} className="block">
-        <div className="relative">
+    <div className="group bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg shadow-brand-gold/10 hover:border-brand-gold/50 transition-all duration-300 overflow-hidden relative flex flex-col h-full">
+      <ReactRouterDOM.Link to={`/product/${product.id}`} className="block flex flex-col h-full">
+        <div className="relative aspect-square w-full overflow-hidden">
           <LazyImage 
             src={product.image} 
             alt={product.name} 
-            className="w-full h-48 object-cover group-hover:opacity-90 transition-opacity duration-300" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
           />
           {discountPercentage > 0 && (
             <div className="absolute top-2 left-2 bg-brand-gold text-brand-dark text-xs font-bold px-2 py-1 rounded">
@@ -29,16 +29,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="text-md font-semibold text-brand-light truncate group-hover:text-brand-gold transition-colors duration-300">{product.name}</h3>
+        <div className="p-4 flex flex-col flex-grow">
+          <h3 className="text-md font-semibold text-brand-light group-hover:text-brand-gold transition-colors duration-300 min-h-10">{product.name}</h3>
           <div className="flex items-center mt-2">
             <StarRating rating={product.rating} />
             <span className="text-xs text-brand-light/70 ml-2">({product.reviewCount})</span>
           </div>
-          <div className="flex items-baseline mt-2">
-            <p className="text-lg font-bold text-brand-light">${product.price.toFixed(2)}</p>
+          <div className="flex items-baseline mt-auto pt-2">
+            <p className="text-lg font-bold text-brand-light">₹{product.price.toFixed(2)}</p>
             {product.originalPrice && (
-              <p className="text-sm text-brand-light/60 line-through ml-2">${product.originalPrice.toFixed(2)}</p>
+              <p className="text-sm text-brand-light/60 line-through ml-2">₹{product.originalPrice.toFixed(2)}</p>
             )}
           </div>
         </div>

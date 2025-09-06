@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext.tsx';
 import { useProducts } from '../hooks/useProducts.ts';
 import { NAVIGATION_CATEGORIES } from '../constants.ts';
 import Icon from '../components/Icon.tsx';
+import HomeContentSkeleton from '../components/skeletons/HomeContentSkeleton.tsx';
 
 // ==================================================================
 // LoggedInHomePage - The AI Dashboard for authenticated users
@@ -62,25 +63,6 @@ const FlashDeals: React.FC<{ product: any }> = ({ product }) => {
   );
 };
 
-const PersonalizedForYou: React.FC<{ product: any, isNew?: boolean }> = ({ product, isNew = false }) => (
-  <div className="h-full group relative bg-black/40 border border-brand-gold/20 rounded-2xl p-6 flex flex-col backdrop-blur-sm shadow-2xl shadow-brand-gold/10 overflow-hidden">
-      <img src={product.image} alt={product.name} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500"/>
-      <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/70 to-transparent"></div>
-      <div className="relative z-10 flex flex-col flex-grow justify-between">
-          <div>
-              <h3 className="font-serif text-2xl text-brand-gold-light">
-                {isNew ? "Fresh on whYYOuts" : "Because You'll Love"}
-              </h3>
-              <p className="text-white mt-2 text-lg font-semibold">{product.name}</p>
-          </div>
-          <div className="flex items-center justify-between mt-4">
-              <p className="text-2xl font-bold text-white">${product.price.toFixed(2)}</p>
-              {!isNew && <button className="text-xs font-bold text-brand-gold hover:underline">Why was this recommended?</button>}
-          </div>
-      </div>
-  </div>
-);
-
 const CategoryHub: React.FC = () => (
   <section className="py-12">
     <h2 className="font-serif text-3xl text-center text-brand-light mb-8 tracking-wider">Interactive Category Hub</h2>
@@ -89,6 +71,7 @@ const CategoryHub: React.FC = () => (
         <ReactRouterDOM.Link 
           to="/shop" 
           key={cat.id} 
+          state={{ category: cat.id }}
           className="group flex-shrink-0 flex flex-col items-center justify-center space-y-3 p-4 w-32 bg-black/40 border border-brand-gold/20 rounded-2xl backdrop-blur-sm hover:border-brand-gold hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-gold/10 transition-all duration-300 text-center"
         >
           <img src={cat.image} alt={cat.name} className="w-20 h-20 rounded-full object-cover border-2 border-brand-gold/30 group-hover:border-brand-gold transition-all duration-300" />
@@ -101,7 +84,7 @@ const CategoryHub: React.FC = () => (
 
 const LoggedInHomePage: React.FC = () => {
   const { user } = useAuth();
-  const { products } = useProducts();
+  const { products, loading } = useProducts();
   const navigate = ReactRouterDOM.useNavigate();
 
   useEffect(() => {
@@ -110,7 +93,7 @@ const LoggedInHomePage: React.FC = () => {
     }
   }, [user, navigate]);
 
-  if (!user || products.length === 0 || (user && user.role === 'seller')) {
+  if (!user || (user && user.role === 'seller')) {
     return (
       <div className="bg-brand-dark min-h-screen flex items-center justify-center">
         <p className="text-brand-gold animate-pulse">Loading Your Personal Dashboard...</p>
@@ -118,8 +101,7 @@ const LoggedInHomePage: React.FC = () => {
     );
   }
   
-  const newestProduct = products.length > 0 ? products[0] : null;
-  const flashDealProduct = products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
+  const flashDealProduct = !loading && products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
@@ -127,12 +109,13 @@ const LoggedInHomePage: React.FC = () => {
       <Header />
       <main className="pb-24 md:pb-8 pt-28 space-y-12">
         <WelcomeUser name={user.fullName} />
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[22rem]">
-                {flashDealProduct && <FlashDeals product={flashDealProduct} />}
-                {newestProduct && <PersonalizedForYou product={newestProduct} isNew={true} />}
-            </div>
-        </section>
+        {loading ? <HomeContentSkeleton /> : (
+            <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto h-[22rem]">
+                    {flashDealProduct && <FlashDeals product={flashDealProduct} />}
+                </div>
+            </section>
+        )}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <CategoryHub />
         </div>
@@ -156,18 +139,9 @@ const WelcomePublic: React.FC = () => (
 );
 
 const PublicHomePage: React.FC = () => {
-  const { products } = useProducts();
-
-  if (products.length === 0) {
-    return (
-      <div className="bg-brand-dark min-h-screen flex items-center justify-center">
-        <p className="text-brand-gold animate-pulse">Loading Our Collection...</p>
-      </div>
-    );
-  }
+  const { products, loading } = useProducts();
   
-  const newestProduct = products.length > 0 ? products[0] : null;
-  const flashDealProduct = products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
+  const flashDealProduct = !loading && products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
@@ -175,12 +149,13 @@ const PublicHomePage: React.FC = () => {
       <Header />
       <main className="pb-24 md:pb-8 pt-28 space-y-12">
         <WelcomePublic />
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[22rem]">
-                {flashDealProduct && <FlashDeals product={flashDealProduct} />}
-                {newestProduct && <PersonalizedForYou product={newestProduct} isNew={true} />}
-            </div>
-        </section>
+        {loading ? <HomeContentSkeleton /> : (
+            <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto h-[22rem]">
+                    {flashDealProduct && <FlashDeals product={flashDealProduct} />}
+                </div>
+            </section>
+        )}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <CategoryHub />
         </div>

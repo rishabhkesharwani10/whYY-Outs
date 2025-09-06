@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import * as ReactRouterDOM from 'react-router-dom';
@@ -8,6 +9,8 @@ import { ProductProvider } from './context/ProductContext.tsx';
 import { OrderProvider } from './context/OrderContext.tsx';
 import { AICopilotProvider } from './context/AICopilotContext.tsx';
 import { WishlistProvider } from './context/WishlistContext.tsx';
+import { NotificationProvider } from './context/NotificationContext.tsx';
+import { ReturnProvider } from './context/ReturnContext.tsx';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -23,9 +26,13 @@ root.render(
           <WishlistProvider>
             <CartProvider>
               <OrderProvider>
-                <AICopilotProvider>
-                  <App />
-                </AICopilotProvider>
+                <NotificationProvider>
+                  <ReturnProvider>
+                    <AICopilotProvider>
+                      <App />
+                    </AICopilotProvider>
+                  </ReturnProvider>
+                </NotificationProvider>
               </OrderProvider>
             </CartProvider>
           </WishlistProvider>

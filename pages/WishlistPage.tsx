@@ -6,9 +6,10 @@ import Footer from '../components/Footer.tsx';
 import BackButton from '../components/BackButton.tsx';
 import ProductCard from '../components/ProductCard.tsx';
 import Icon from '../components/Icon.tsx';
+import ProductCardSkeleton from '../components/skeletons/ProductCardSkeleton.tsx';
 
 const WishlistPage: React.FC = () => {
-  const { wishlistItems } = useWishlist();
+  const { wishlistItems, loading } = useWishlist();
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
@@ -18,13 +19,22 @@ const WishlistPage: React.FC = () => {
           <BackButton fallback="/profile" />
         </div>
         <h1 className="font-serif text-4xl text-brand-light mb-2">My Wishlist</h1>
-        <p className="text-brand-light/70 mb-8">
-          {wishlistItems.length > 0
-            ? `You have ${wishlistItems.length} item(s) saved.`
-            : 'Your saved items will appear here.'}
-        </p>
+        
+        {loading ? (
+           <p className="text-brand-light/70 mb-8 animate-pulse">Loading your saved items...</p>
+        ) : (
+          <p className="text-brand-light/70 mb-8">
+            {wishlistItems.length > 0
+              ? `You have ${wishlistItems.length} item(s) saved.`
+              : 'Your saved items will appear here.'}
+          </p>
+        )}
 
-        {wishlistItems.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, index) => <ProductCardSkeleton key={index} />)}
+          </div>
+        ) : wishlistItems.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {wishlistItems.map(product => (
               <ProductCard key={product.id} product={product} />

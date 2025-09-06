@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
@@ -11,8 +10,10 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'customer' | 'seller'>('customer');
+  const [businessName, setBusinessName] = useState('');
   const [panNumber, setPanNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
   const [address, setAddress] = useState('');
   const [pincode, setPincode] = useState('');
   const [error, setError] = useState('');
@@ -31,11 +32,11 @@ const RegisterPage: React.FC = () => {
     e.preventDefault();
     setError('');
     if (!fullName || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+      setError('Please fill in all required fields.');
       return;
     }
-    if (role === 'seller' && !panNumber && !gstNumber) {
-      setError('Either a PAN number or GST number is required for sellers.');
+    if (role === 'seller' && (!businessName || !panNumber)) {
+      setError('Business Name and PAN Number are required for sellers.');
       return;
     }
     if (password !== confirmPassword) {
@@ -43,7 +44,7 @@ const RegisterPage: React.FC = () => {
       return;
     }
     
-    const { error: registerError } = await register(fullName, email, password, role, panNumber, gstNumber, address, pincode);
+    const { error: registerError } = await register(fullName, email, password, role, panNumber, gstNumber, address, pincode, businessName, registrationNumber);
 
     if (registerError) {
       setError(registerError.message || 'Failed to register.');
@@ -51,6 +52,9 @@ const RegisterPage: React.FC = () => {
       setRegistrationSuccess(true);
     }
   };
+
+  const formInputClass = "mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all";
+  const formLabelClass = "block text-sm font-medium text-brand-gold tracking-wider uppercase";
 
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
@@ -94,142 +98,50 @@ const RegisterPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label 
-                      htmlFor="fullName" 
-                      className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                      placeholder="John Doe"
-                    />
+                    <label htmlFor="fullName" className={formLabelClass}>Full Name</label>
+                    <input type="text" id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required className={formInputClass} placeholder="John Doe"/>
                   </div>
 
                   <div>
-                    <label 
-                      htmlFor="email" 
-                      className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                      placeholder="you@example.com"
-                    />
+                    <label htmlFor="email" className={formLabelClass}>Email Address</label>
+                    <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={formInputClass} placeholder="you@example.com"/>
                   </div>
 
                   <div>
-                    <label 
-                      htmlFor="password" 
-                      className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                    >
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                      placeholder="••••••••"
-                    />
+                    <label htmlFor="password" className={formLabelClass}>Password</label>
+                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={formInputClass} placeholder="••••••••"/>
                   </div>
 
                    <div>
-                    <label 
-                      htmlFor="confirmPassword" 
-                      className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                    >
-                      Confirm Password
-                    </label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                      placeholder="••••••••"
-                    />
+                    <label htmlFor="confirmPassword" className={formLabelClass}>Confirm Password</label>
+                    <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={formInputClass} placeholder="••••••••"/>
                   </div>
 
                   {role === 'seller' && (
                     <>
                       <div>
-                        <label 
-                          htmlFor="panNumber" 
-                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                        >
-                          PAN Number (or GST)
-                        </label>
-                        <input
-                          type="text"
-                          id="panNumber"
-                          value={panNumber}
-                          onChange={(e) => setPanNumber(e.target.value)}
-                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                          placeholder="ABCDE1234F"
-                        />
+                        <label htmlFor="businessName" className={formLabelClass}>Business Name</label>
+                        <input type="text" id="businessName" value={businessName} onChange={(e) => setBusinessName(e.target.value)} required className={formInputClass} placeholder="My Awesome Store"/>
                       </div>
                       <div>
-                        <label 
-                          htmlFor="gstNumber" 
-                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                        >
-                          GST Number (or PAN)
-                        </label>
-                        <input
-                          type="text"
-                          id="gstNumber"
-                          value={gstNumber}
-                          onChange={(e) => setGstNumber(e.target.value)}
-                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                          placeholder="22ABCDE1234F1Z5"
-                        />
+                        <label htmlFor="panNumber" className={formLabelClass}>PAN Number</label>
+                        <input type="text" id="panNumber" value={panNumber} onChange={(e) => setPanNumber(e.target.value)} required className={formInputClass} placeholder="ABCDE1234F"/>
+                      </div>
+                      <div>
+                        <label htmlFor="gstNumber" className={formLabelClass}>GST Number (Optional)</label>
+                        <input type="text" id="gstNumber" value={gstNumber} onChange={(e) => setGstNumber(e.target.value)} className={formInputClass} placeholder="22ABCDE1234F1Z5"/>
                       </div>
                        <div>
-                        <label 
-                          htmlFor="address" 
-                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                        >
-                          Business Address (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          id="address"
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
-                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                          placeholder="123 Business Rd"
-                        />
+                        <label htmlFor="registrationNumber" className={formLabelClass}>Business Reg. No. (Optional)</label>
+                        <input type="text" id="registrationNumber" value={registrationNumber} onChange={(e) => setRegistrationNumber(e.target.value)} className={formInputClass} placeholder="U74999DL2015PTC286426"/>
+                      </div>
+                       <div>
+                        <label htmlFor="address" className={formLabelClass}>Business Address (Optional)</label>
+                        <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} className={formInputClass} placeholder="123 Business Rd"/>
                       </div>
                       <div>
-                        <label 
-                          htmlFor="pincode" 
-                          className="block text-sm font-medium text-brand-gold tracking-wider uppercase"
-                        >
-                          Pincode / ZIP (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          id="pincode"
-                          value={pincode}
-                          onChange={(e) => setPincode(e.target.value)}
-                          className="mt-2 block w-full bg-black/20 border border-brand-gold/30 rounded-md py-2 px-3 text-brand-light placeholder-brand-light/40 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                          placeholder="12345"
-                        />
+                        <label htmlFor="pincode" className={formLabelClass}>Pincode / ZIP (Optional)</label>
+                        <input type="text" id="pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} className={formInputClass} placeholder="12345"/>
                       </div>
                     </>
                   )}
@@ -237,10 +149,7 @@ const RegisterPage: React.FC = () => {
                   {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
                   <div>
-                    <button 
-                      type="submit" 
-                      className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase"
-                    >
+                    <button type="submit" className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase">
                       Register
                     </button>
                   </div>

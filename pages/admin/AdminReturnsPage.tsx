@@ -1,10 +1,8 @@
 
-import React, { useState, useMemo } from 'react';
-import SellerLayout from '../../components/SellerLayout.tsx';
+import React, { useState } from 'react';
+import AdminLayout from '../../components/AdminLayout.tsx';
 import BackButton from '../../components/BackButton.tsx';
 import { useReturns } from '../../hooks/useReturns.ts';
-import { useAuth } from '../../context/AuthContext.tsx';
-import { useProducts } from '../../hooks/useProducts.ts';
 import type { ReturnRequest } from '../../types.ts';
 
 const StatusUpdateModal: React.FC<{ request: ReturnRequest; action: 'Approve' | 'Reject'; onClose: () => void; }> = ({ request, action, onClose }) => {
@@ -42,20 +40,9 @@ const StatusUpdateModal: React.FC<{ request: ReturnRequest; action: 'Approve' | 
     );
 };
 
-
-const SellerReturnsPage: React.FC = () => {
-    const { user } = useAuth();
-    const { products } = useProducts();
+const AdminReturnsPage: React.FC = () => {
     const { returnRequests, loading } = useReturns();
     const [modalState, setModalState] = useState<{ request: ReturnRequest; action: 'Approve' | 'Reject' } | null>(null);
-
-    const sellerProductIds = useMemo(() => {
-        return new Set(products.filter(p => p.sellerId === user?.id).map(p => p.id));
-    }, [products, user]);
-
-    const sellerReturnRequests = useMemo(() => {
-        return returnRequests.filter(req => sellerProductIds.has(req.productId));
-    }, [returnRequests, sellerProductIds]);
 
     const getStatusClass = (status: ReturnRequest['status']) => {
         switch (status) {
@@ -67,11 +54,11 @@ const SellerReturnsPage: React.FC = () => {
     };
 
     return (
-        <SellerLayout>
+        <AdminLayout>
             <div className="page-fade-in">
-                <div className="mb-6"><BackButton fallback="/seller-dashboard" /></div>
+                <div className="mb-6"><BackButton fallback="/admin" /></div>
                 <h1 className="font-serif text-4xl text-brand-light">Manage Returns</h1>
-                <p className="text-brand-light/70 mt-1">Review and process customer return requests for your products.</p>
+                <p className="text-brand-light/70 mt-1">Review and process all customer return requests.</p>
                 
                 <div className="bg-black/30 border border-brand-gold/20 rounded-lg overflow-x-auto mt-6">
                     <table className="w-full text-left min-w-[720px]">
@@ -87,8 +74,8 @@ const SellerReturnsPage: React.FC = () => {
                         <tbody className="divide-y divide-brand-gold/20">
                             {loading ? (
                                 <tr><td colSpan={5} className="text-center p-8 text-brand-light/70">Loading requests...</td></tr>
-                            ) : sellerReturnRequests.length > 0 ? (
-                                sellerReturnRequests.map(req => (
+                            ) : returnRequests.length > 0 ? (
+                                returnRequests.map(req => (
                                     <tr key={req.id} className="hover:bg-brand-gold/5">
                                         <td className="p-4 flex items-center gap-4">
                                             <img src={req.productImage} alt={req.productName} className="w-12 h-12 object-cover rounded-md" />
@@ -115,15 +102,15 @@ const SellerReturnsPage: React.FC = () => {
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan={5} className="text-center p-16 text-brand-light/70">No return requests found for your products.</td></tr>
+                                <tr><td colSpan={5} className="text-center p-16 text-brand-light/70">No return requests found.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
             {modalState && <StatusUpdateModal request={modalState.request} action={modalState.action} onClose={() => setModalState(null)} />}
-        </SellerLayout>
+        </AdminLayout>
     );
 };
 
-export default SellerReturnsPage;
+export default AdminReturnsPage;

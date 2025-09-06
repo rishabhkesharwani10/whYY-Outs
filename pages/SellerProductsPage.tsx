@@ -1,11 +1,11 @@
 
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import SellerLayout from '../../components/SellerLayout.tsx';
-import { useProducts } from '../../hooks/useProducts.ts';
-import { useAuth } from '../../context/AuthContext.tsx';
-import type { Product } from '../../types.ts';
-import BackButton from '../../components/BackButton.tsx';
+import SellerLayout from '../components/SellerLayout.tsx';
+import { useProducts } from '../hooks/useProducts.ts';
+import { useAuth } from '../context/AuthContext.tsx';
+import type { Product } from '../types.ts';
+import BackButton from '../components/BackButton.tsx';
 
 const SellerProductsPage: React.FC = () => {
     const navigate = ReactRouterDOM.useNavigate();

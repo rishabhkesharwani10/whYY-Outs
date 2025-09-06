@@ -147,7 +147,6 @@ const AddProductPage: React.FC = () => {
         features: featuresInput.split('\n').filter(f => f.trim() !== ''),
         sizes: sizesInput.split(',').map(s => s.trim()).filter(s => s !== ''),
         sellerId: user.id,
-        // FIX: Convert empty string to undefined so Supabase receives null
         expiryDate: formData.expiryDate || undefined,
       };
       
@@ -160,7 +159,15 @@ const AddProductPage: React.FC = () => {
       
     } catch (err: any) {
         console.error("Detailed Add Product Error:", err);
-        setError(`Failed to add product: ${err.message}. Please check console for details.`);
+        const errorMessage = err.message || '';
+
+        if (errorMessage.includes('violates row-level security policy')) {
+            setError('Database Permission Error: You do not have permission to add products. This is a database security rule issue. Please ensure the admin role has INSERT permissions on the \'products\' table.');
+        } else if (errorMessage.includes('foreign key constraint')) {
+            setError('Database Schema Error: The product\'s creator (seller_id) is not a valid user. This often affects admin accounts and requires a database schema correction to the foreign key on the \'products\' table.');
+        } else {
+            setError(`Failed to add product: ${errorMessage}. Please check the console for details.`);
+        }
         setIsUploading(false);
         setUploadStatus('');
     }
@@ -234,7 +241,7 @@ const AddProductPage: React.FC = () => {
                   <label className={formLabelClass}>Product Images (First is main)</label>
                   <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                       {imagePreviews.map((preview, index) => (
-                          <div key={index} className="relative aspect-square group">
+                          <div key={index} className="relative aspect-square group transition-transform duration-300 hover:scale-105">
                               <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-md" />
                               <button type="button" onClick={() => handleRemoveImage(index)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Remove image">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
@@ -256,15 +263,15 @@ const AddProductPage: React.FC = () => {
             <FormSection title="Pricing & Stock">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                  <div>
-                    <label htmlFor="price" className={formLabelClass}>Selling Price ($)</label>
+                    <label htmlFor="price" className={formLabelClass}>Selling Price (₹)</label>
                     <input type="number" id="price" name="price" value={formData.price || ''} onChange={handleInputChange} required min="0" step="0.01" className={formInputClass}/>
                   </div>
                   <div>
-                    <label htmlFor="originalPrice" className={formLabelClass}>MRP / List Price ($)</label>
+                    <label htmlFor="originalPrice" className={formLabelClass}>MRP / List Price (₹)</label>
                     <input type="number" id="originalPrice" name="originalPrice" value={formData.originalPrice || ''} onChange={handleInputChange} min="0" step="0.01" className={formInputClass} />
                   </div>
                   <div>
-                    <label htmlFor="costPrice" className={formLabelClass}>Cost Price ($)</label>
+                    <label htmlFor="costPrice" className={formLabelClass}>Cost Price (₹)</label>
                     <input type="number" id="costPrice" name="costPrice" value={formData.costPrice || ''} onChange={handleInputChange} min="0" step="0.01" className={formInputClass} />
                   </div>
                    <div>
@@ -297,7 +304,7 @@ const AddProductPage: React.FC = () => {
                     <div><label htmlFor="color" className={formLabelClass}>Color</label><input type="text" id="color" name="color" value={formData.color} onChange={handleInputChange} className={formInputClass} /></div>
                     <div><label htmlFor="material" className={formLabelClass}>Material / Fabric</label><input type="text" id="material" name="material" value={formData.material} onChange={handleInputChange} className={formInputClass} /></div>
                 </div>
-                <div><label htmlFor="sizesInput" className={formLabelClass}>Sizes (Comma-separated)</label><input type="text" id="sizesInput" name="sizesInput" value={sizesInput} onChange={e => setSizesInput(e.target.value)} className={formInputClass} placeholder="S, M, L, XL" /></div>
+                <div><label htmlFor="sizesInput" className={formLabelClass}>Sizes (Optional, Comma-separated)</label><input type="text" id="sizesInput" name="sizesInput" value={sizesInput} onChange={e => setSizesInput(e.target.value)} className={formInputClass} placeholder="S, M, L, XL" /></div>
                 <div><label htmlFor="featuresInput" className={formLabelClass}>Features (One per line)</label><textarea id="featuresInput" name="featuresInput" value={featuresInput} onChange={e => setFeaturesInput(e.target.value)} required rows={4} className={formInputClass} /></div>
             </FormSection>
 
@@ -313,7 +320,11 @@ const AddProductPage: React.FC = () => {
             {error && <p className="text-red-500 text-sm text-center bg-red-500/10 p-3 rounded-md">{error}</p>}
 
             <div className="pt-4">
-              <button type="submit" disabled={isUploading} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center">
+              <button 
+                type="submit" 
+                disabled={isUploading} 
+                className={`w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors duration-300 uppercase disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center ${isUploading ? 'animate-subtle-pulse' : ''}`}
+              >
                 {isUploading ? (<><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin mr-3"></div><span>{uploadStatus || 'Processing...'}</span></>) : ('Add Product')}
               </button>
             </div>

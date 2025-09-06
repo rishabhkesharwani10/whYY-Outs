@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import SellerLayout from '../../components/SellerLayout.tsx';
-import { useProducts } from '../../hooks/useProducts.ts';
-import { useAuth } from '../../context/AuthContext.tsx';
-import { NAVIGATION_CATEGORIES } from '../../constants.ts';
-import type { Product } from '../../types.ts';
-import { supabase } from '../../supabase.ts';
-import Icon from '../../components/Icon.tsx';
-import BackButton from '../../components/BackButton.tsx';
+import SellerLayout from '../components/SellerLayout.tsx';
+import { useProducts } from '../hooks/useProducts.ts';
+import { useAuth } from '../context/AuthContext.tsx';
+import { NAVIGATION_CATEGORIES } from '../constants.ts';
+import type { Product } from '../types.ts';
+import { supabase } from '../supabase.ts';
+import Icon from '../components/Icon.tsx';
+import BackButton from '../components/BackButton.tsx';
 
 const mapSupabaseProductToApp = (p: any): Product => ({
   id: p.id, name: p.name, description: p.description, price: p.price, originalPrice: p.original_price, rating: p.rating, reviewCount: p.review_count, image: p.image, images: p.images || [], categoryId: p.category_id, features: p.features || [], sizes: p.sizes || [], sellerId: p.seller_id,

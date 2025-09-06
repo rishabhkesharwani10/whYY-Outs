@@ -4,6 +4,7 @@ import { supabase } from '../supabase.ts';
 
 interface ProductContextType {
   products: Product[];
+  loading: boolean;
   addProduct: (productData: Omit<Product, 'id' | 'rating' | 'reviewCount'>) => Promise<{ data: Product | null; error: any | null }>;
   updateProduct: (productId: string, productData: Partial<Product>) => Promise<{ error: any | null }>;
   deleteProduct: (product: Product) => Promise<{ error: any | null }>;
@@ -59,15 +60,18 @@ const mapAppProductToSupabase = (productData: Partial<Product>) => {
 
 export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
       if (error) {
         console.error('Error fetching products:', error.message);
       } else if (data) {
         setProducts(data.map(mapSupabaseProduct));
       }
+      setLoading(false);
     };
     fetchProducts();
 
@@ -178,7 +182,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return { error };
   }, []);
 
-  const value = useMemo(() => ({ products, addProduct, updateProduct, deleteProduct }), [products, addProduct, updateProduct, deleteProduct]);
+  const value = useMemo(() => ({ products, loading, addProduct, updateProduct, deleteProduct }), [products, loading, addProduct, updateProduct, deleteProduct]);
 
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;
 };
