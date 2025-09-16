@@ -44,7 +44,9 @@ export const useSellerData = () => {
     }, [orders, user]);
 
     const totalRevenue = useMemo((): number => {
-        return sellerOrders.reduce((acc, order) => acc + order.sellerTotal, 0);
+        return sellerOrders
+            .filter(order => order.status === 'Delivered')
+            .reduce((acc, order) => acc + order.sellerTotal, 0);
     }, [sellerOrders]);
 
     return {

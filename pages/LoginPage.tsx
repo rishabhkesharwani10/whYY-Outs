@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
@@ -42,7 +41,7 @@ const LoginPage: React.FC = () => {
     <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
       <Header showSearch={false} />
 
-      <main className="flex-grow flex items-center justify-center px-4 pt-24 pb-12">
+      <main className="flex-grow flex items-center justify-center px-4 pt-32 pb-12">
         <div className="w-full max-w-md">
           <div className="bg-brand-dark p-8 rounded-lg border border-brand-gold/20 shadow-lg shadow-brand-gold/10">
             <h1 className="font-serif text-4xl text-center text-brand-light mb-2">

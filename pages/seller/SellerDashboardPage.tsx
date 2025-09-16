@@ -29,7 +29,7 @@ const SellerDashboardPage: React.FC = () => {
         <p className="text-brand-light/70 mt-1">Welcome back, {user?.fullName?.split(' ')[0]}! Here's an overview of your store.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          <StatCard title="Total Revenue" value={totalRevenue.toFixed(2)} prefix="₹" icon="wallet" />
+          <StatCard title="Total Revenue" value={totalRevenue.toFixed(2)} prefix="₹" icon="wallet" link="/seller/payouts" />
           <StatCard title="Total Orders" value={sellerOrders.length.toString()} icon="cart" link="/seller/orders" />
           <StatCard title="Products Listed" value={sellerProducts.length.toString()} icon="category" link="/seller/products" />
         </div>

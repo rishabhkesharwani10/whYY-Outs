@@ -35,7 +35,7 @@ const ReturnModal: React.FC<{ item: OrderItem; orderId: string; onClose: () => v
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[101] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[101] flex items-center justify-center p-4 print:hidden">
             <div className="bg-brand-dark border border-brand-gold/20 rounded-lg shadow-2xl w-full max-w-md p-6 page-fade-in relative">
                 <button onClick={onClose} className="absolute top-3 right-3 p-1 text-brand-light/70 hover:text-white">&times;</button>
                 <h2 className="font-serif text-2xl text-brand-gold mb-4">Request a Return</h2>
@@ -74,7 +74,7 @@ const CancelOrderModal: React.FC<{ isOpen: boolean; onClose: () => void; onConfi
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[101] flex items-center justify-center p-4" aria-modal="true" role="dialog">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[101] flex items-center justify-center p-4 print:hidden" aria-modal="true" role="dialog">
             <div className="bg-brand-dark border border-brand-gold/20 rounded-lg shadow-2xl w-full max-w-md p-6 page-fade-in relative">
                 <h2 className="font-serif text-2xl text-brand-gold mb-4">Confirm Cancellation</h2>
                 {error ? (
@@ -104,17 +104,17 @@ const OrderTracker: React.FC<{ status: 'Processing' | 'Shipped' | 'Delivered' | 
 
     if (status === 'Cancelled') {
         return (
-            <div className="text-center py-6">
+            <div className="text-center py-6 border-y border-brand-gold/20 my-8">
                 <p className="font-serif text-2xl text-red-400">Order Cancelled</p>
             </div>
         )
     }
 
     return (
-        <div className="flex justify-between items-center px-4 md:px-8 py-6">
+        <div className="flex justify-between items-center px-4 md:px-8 py-6 border-y border-brand-gold/20 my-8">
             {statuses.map((s, index) => (
                 <React.Fragment key={s}>
-                    <div className="flex flex-col items-center text-center">
+                    <div className="flex flex-col items-center text-center w-24">
                         <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-500 ${index <= currentIndex ? 'bg-brand-gold text-brand-dark border-brand-gold' : 'border-brand-gold/30 text-brand-gold'}`}>
                             {index <= currentIndex ? <Icon name="check" className="w-6 h-6" /> : <Icon name="truck" className="w-6 h-6" />}
                         </div>
@@ -128,7 +128,6 @@ const OrderTracker: React.FC<{ status: 'Processing' | 'Shipped' | 'Delivered' | 
         </div>
     );
 };
-
 
 const OrderDetailPage: React.FC = () => {
     const { orderId } = ReactRouterDOM.useParams<{ orderId: string }>();
@@ -144,20 +143,14 @@ const OrderDetailPage: React.FC = () => {
 
     const handleConfirmCancel = async () => {
         if (!order) return;
-        
         setIsCancelling(true);
         setCancelError('');
         try {
             const { error } = await updateOrderStatus(order.id, 'Cancelled');
-            if (error) {
-                throw error;
-            }
-            // On success, the modal will close.
+            if (error) throw error;
             setIsCancelModalOpen(false);
         } catch (err: any) {
-            console.error("Cancellation failed:", err);
-            const detailedMessage = err.message || "An unknown error occurred.";
-            setCancelError(`Failed to cancel order: ${detailedMessage}. Please contact support if this persists.`);
+            setCancelError(`Failed to cancel order: ${err.message}.`);
         } finally {
             setIsCancelling(false);
         }
@@ -166,6 +159,10 @@ const OrderDetailPage: React.FC = () => {
     const handleOpenCancelModal = () => {
         setCancelError('');
         setIsCancelModalOpen(true);
+    };
+
+    const handlePrint = () => {
+        window.print();
     };
 
     const getItemReturnRequest = (productId: string): ReturnRequest | undefined => {
@@ -181,110 +178,161 @@ const OrderDetailPage: React.FC = () => {
     }
 
     return (
-        <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in">
-            <Header />
-            <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
-                <div className="mb-8"><BackButton fallback="/order-history" /></div>
+        <>
+            {/* --- ON-SCREEN UI (completely hidden on print) --- */}
+            <div className="bg-brand-dark text-brand-light min-h-screen flex flex-col font-sans relative page-fade-in print:hidden">
+                <Header />
+                <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-32">
+                    <div className="mb-8"><BackButton fallback="/order-history" /></div>
 
-                <div className="bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg p-6 md:p-8">
-                    <div className="flex flex-col md:flex-row justify-between items-start mb-6 pb-6 border-b border-brand-gold/20">
-                        <div>
-                            <h1 className="font-serif text-3xl text-brand-light">Order Details</h1>
-                            <p className="text-brand-light/70">ID: <span className="font-mono text-sm">#{order.id}</span></p>
-                            <p className="text-sm text-brand-light/70">Tracking #: {order.shippingTrackingNumber}</p>
+                    <div className="bg-black/20 border border-brand-gold/20 rounded-lg shadow-lg p-6 md:p-10">
+                        <div className="flex flex-col sm:flex-row justify-between items-start mb-8 pb-6 border-b border-brand-gold/20">
+                            <div>
+                                <Icon name="logo" className="w-40 h-12" />
+                                <p className="text-brand-light/70 mt-2">Order Invoice</p>
+                            </div>
+                            <div className="text-left sm:text-right mt-4 sm:mt-0">
+                                <h2 className="font-serif text-3xl text-brand-light">Order #{order.id.substring(0, 8)}</h2>
+                                <p className="text-brand-light/70">Date: {new Date(order.orderDate).toLocaleDateString()}</p>
+                                {order.shippingTrackingNumber && <p className="text-sm text-brand-light/70">Tracking: {order.shippingTrackingNumber}</p>}
+                            </div>
                         </div>
-                        <p className="text-sm text-brand-light/70 mt-2 md:mt-0 md:text-right">Order Date: {new Date(order.orderDate).toLocaleString()}</p>
-                    </div>
-                    
-                    <OrderTracker status={order.status} />
 
-                    {order.status === 'Processing' && (
-                        <div className="text-center my-4">
-                            <button onClick={handleOpenCancelModal} className="font-sans text-sm tracking-widest px-8 py-2 border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors duration-300 uppercase">
-                                Cancel Order
+                        <div className="grid md:grid-cols-2 gap-8 mb-4 pb-4 border-b border-brand-gold/20">
+                            <div>
+                                <h3 className="font-serif text-xl text-brand-gold mb-2">Shipped To</h3>
+                                <address className="not-italic text-brand-light/90">
+                                    <strong>{order.shippingAddress.fullName}</strong><br />
+                                    {order.shippingAddress.addressLine1}<br />
+                                    {order.shippingAddress.addressLine2 && <>{order.shippingAddress.addressLine2}<br /></>}
+                                    {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.zip}<br/>
+                                    {order.shippingAddress.phone}
+                                </address>
+                            </div>
+                            <div className="md:text-right">
+                                <h3 className="font-serif text-xl text-brand-gold mb-2">Payment Details</h3>
+                                <p className="text-brand-light/90"><strong>Method:</strong> {order.paymentMethod}</p>
+                                <p className="text-brand-light/90"><strong>Payment ID:</strong> <span className="font-mono text-sm">{order.paymentId}</span></p>
+                            </div>
+                        </div>
+                        
+                        <OrderTracker status={order.status} />
+                        
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="border-b border-brand-gold/20">
+                                    <tr>
+                                        <th className="p-3 text-sm font-semibold uppercase tracking-wider">Item</th>
+                                        <th className="p-3 text-sm font-semibold uppercase tracking-wider text-right">Price</th>
+                                        <th className="p-3 text-sm font-semibold uppercase tracking-wider text-center">Qty</th>
+                                        <th className="p-3 text-sm font-semibold uppercase tracking-wider text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-brand-gold/20">
+                                    {order.items.map(item => {
+                                        const returnRequest = getItemReturnRequest(item.productId);
+                                        return (
+                                            <tr key={item.productId}>
+                                                <td className="p-3">
+                                                    <div className="flex items-center gap-4">
+                                                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md hidden sm:block" />
+                                                        <div>
+                                                            <ReactRouterDOM.Link to={`/product/${item.productId}`} className="font-semibold text-brand-light hover:text-brand-gold">
+                                                                {item.name}
+                                                            </ReactRouterDOM.Link>
+                                                             {returnRequest && <div className="mt-1 text-xs text-yellow-400">Return Request: {returnRequest.status}</div>}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-right font-mono">₹{item.price.toFixed(2)}</td>
+                                                <td className="p-3 text-center font-mono">{item.quantity}</td>
+                                                <td className="p-3 text-right font-mono font-bold">₹{(item.price * item.quantity).toFixed(2)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex justify-end mt-6">
+                            <div className="w-full max-w-sm space-y-2 text-brand-light/90">
+                                <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">₹{order.subtotal.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span>GST</span><span className="font-mono">₹{order.gst.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span>Shipping</span><span className="font-mono">₹{order.shippingFee.toFixed(2)}</span></div>
+                                {order.couponDiscount && <div className="flex justify-between text-green-400"><span>Discount ({order.couponCode})</span><span className="font-mono">- ₹{order.couponDiscount.toFixed(2)}</span></div>}
+                                <div className="border-t border-brand-gold/20 my-2"></div>
+                                <div className="flex justify-between font-bold text-xl text-brand-light"><span>TOTAL</span><span className="font-mono">₹{order.totalPrice.toFixed(2)}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-10 pt-6 border-t border-brand-gold/20 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div>
+                                {order.status === 'Processing' && <button onClick={handleOpenCancelModal} className="font-sans text-sm tracking-widest px-6 py-2 border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors uppercase">Cancel Order</button>}
+                                {order.status === 'Delivered' && <p className="text-sm text-green-400">This order has been delivered.</p>}
+                            </div>
+                            <button onClick={handlePrint} className="flex items-center gap-2 font-sans text-sm tracking-widest px-6 py-2 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-dark transition-colors uppercase">
+                               <Icon name="print" className="w-5 h-5"/> Print Invoice
                             </button>
                         </div>
-                    )}
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-8">
-                        <div className="lg:col-span-3">
-                            <h2 className="font-serif text-xl text-brand-gold mb-4">Items Ordered ({order.items.length})</h2>
-                            <div className="space-y-4">
-                                {order.items.map(item => {
-                                    const returnRequest = getItemReturnRequest(item.productId);
-                                    return (
-                                        <div key={item.productId} className="flex items-center justify-between p-3 bg-black/30 rounded-lg">
-                                            <div className="flex items-center gap-4">
-                                                <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
-                                                <div>
-                                                    <ReactRouterDOM.Link to={`/product/${item.productId}`} className="font-semibold text-brand-light hover:text-brand-gold">{item.name}</ReactRouterDOM.Link>
-                                                    <p className="text-sm text-brand-light/70">Qty: {item.quantity}</p>
-                                                    <p className="text-sm text-brand-light/70">Price: ₹{item.price.toFixed(2)}</p>
-                                                     {order.status === 'Delivered' && (
-                                                        <div className="mt-1">
-                                                          <div className="flex items-center gap-2 text-xs text-green-400 font-semibold mb-1">
-                                                              <Icon name="check" className="w-4 h-4" />
-                                                              <span>Delivered</span>
-                                                          </div>
-                                                          {!returnRequest && <button onClick={() => setReturnModalItem(item)} className="text-xs text-brand-gold hover:underline flex items-center gap-1"><Icon name="return" className="w-3 h-3"/> Request Return</button> }
-                                                        </div>
-                                                     )}
-                                                     {returnRequest && (
-                                                        <div className="mt-1 text-xs">
-                                                            {returnRequest.status === 'Pending' && <span className="text-yellow-400">Return Pending</span>}
-                                                            {returnRequest.status === 'Approved' && <span className="text-green-400">Return Approved</span>}
-                                                            {returnRequest.status === 'Rejected' && <span className="text-red-400">Return Rejected: {returnRequest.statusReason}</span>}
-                                                        </div>
-                                                     )}
-                                                </div>
-                                            </div>
-                                            <p className="font-bold text-lg text-right">₹{(item.price * item.quantity).toFixed(2)}</p>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="lg:col-span-2">
-                            <div className="bg-black/30 p-4 rounded-lg">
-                                <h2 className="font-serif text-xl text-brand-gold mb-3">Shipping Address</h2>
-                                <div className="text-brand-light/90 space-y-0.5 text-sm">
-                                    <p className="font-bold">{order.shippingAddress.fullName}</p>
-                                    <p>{order.shippingAddress.addressLine1}</p>
-                                    {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
-                                    <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.zip}</p>
-                                    <p>Phone: {order.shippingAddress.phone}</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-black/30 p-4 rounded-lg mt-4">
-                                <h2 className="font-serif text-xl text-brand-gold mb-3">Payment Summary</h2>
-                                <div className="space-y-1 text-brand-light/90 text-sm">
-                                    <p><strong>Method:</strong> {order.paymentMethod}</p>
-                                    <div className="pt-2">
-                                        <div className="flex justify-between"><span>Subtotal:</span><span>₹{order.subtotal.toFixed(2)}</span></div>
-                                        <div className="flex justify-between"><span>GST:</span><span>₹{order.gst.toFixed(2)}</span></div>
-                                        <div className="flex justify-between"><span>Shipping:</span><span>₹{order.shippingFee.toFixed(2)}</span></div>
-                                        {order.couponDiscount && <div className="flex justify-between text-green-400"><span>Discount ({order.couponCode}):</span><span>- ₹{order.couponDiscount.toFixed(2)}</span></div>}
-                                        <div className="border-t border-brand-gold/20 my-1"></div>
-                                        <div className="flex justify-between font-bold text-lg"><span>Total Paid:</span><span>₹{order.totalPrice.toFixed(2)}</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
+                </main>
+                <Footer />
+                
+                {returnModalItem && <ReturnModal item={returnModalItem} orderId={order.id} onClose={() => setReturnModalItem(null)} />}
+                <CancelOrderModal
+                    isOpen={isCancelModalOpen}
+                    onClose={() => setIsCancelModalOpen(false)}
+                    onConfirm={handleConfirmCancel}
+                    isLoading={isCancelling}
+                    error={cancelError}
+                />
+            </div>
+
+            {/* --- PRINT-ONLY RECEIPT (only visible on print) --- */}
+            <div className="hidden print:block printable-receipt">
+                <div className="text-center my-2">
+                    <h1 className="text-lg font-bold uppercase">whYYOuts</h1>
+                    <p className="text-xs">Thank you for your order!</p>
                 </div>
-            </main>
-            <Footer />
-            {returnModalItem && <ReturnModal item={returnModalItem} orderId={order.id} onClose={() => setReturnModalItem(null)} />}
-            <CancelOrderModal
-                isOpen={isCancelModalOpen}
-                onClose={() => setIsCancelModalOpen(false)}
-                onConfirm={handleConfirmCancel}
-                isLoading={isCancelling}
-                error={cancelError}
-            />
-        </div>
+                <p className="text-center text-xs">****************************************</p>
+                <div className="space-y-0.5 text-xs my-2">
+                    <p><strong>Order:</strong> #{order.id.substring(0, 8)}</p>
+                    <p><strong>Date:</strong> {new Date(order.orderDate).toLocaleString()}</p>
+                    <p><strong>To:</strong> {order.shippingAddress.fullName}</p>
+                    <p><strong>Payment:</strong> {order.paymentMethod}</p>
+                </div>
+                <p className="text-center text-xs">****************************************</p>
+                <div className="my-2">
+                    {order.items.map(item => (
+                        <div key={item.productId} className="text-xs mb-1">
+                            <p className="font-bold">{item.name}</p>
+                            <div className="flex justify-between">
+                                <p className="pl-2">{item.quantity} x ₹{item.price.toFixed(2)}</p>
+                                <p>₹{(item.price * item.quantity).toFixed(2)}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <p className="text-center text-xs">----------------------------------------</p>
+                <div className="space-y-0.5 text-xs my-2">
+                    <div className="flex justify-between"><span>Subtotal:</span><span>₹{order.subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>GST:</span><span>₹{order.gst.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Shipping:</span><span>₹{order.shippingFee.toFixed(2)}</span></div>
+                    {order.couponDiscount && (
+                        <div className="flex justify-between"><span>Discount:</span><span>- ₹{order.couponDiscount.toFixed(2)}</span></div>
+                    )}
+                </div>
+                <p className="text-center text-xs">----------------------------------------</p>
+                <div className="flex justify-between font-bold text-sm my-2">
+                    <span>TOTAL:</span><span>₹{order.totalPrice.toFixed(2)}</span>
+                </div>
+                <p className="text-center text-xs">****************************************</p>
+                <div className="text-center text-xs mt-2">
+                    <p>All prices in INR. This is not a tax invoice.</p>
+                    <p>www.whyyouts.com</p>
+                </div>
+            </div>
+        </>
     );
 };
 

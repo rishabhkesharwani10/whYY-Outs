@@ -1,7 +1,6 @@
-
 import React from 'react';
 
-type IconName = 'cart' | 'user' | 'search' | 'star-filled' | 'star-empty' | 'plus' | 'minus' | 'trash' | 'chevron-down' | 'logo' | 'check' | 'wishlist' | 'wishlist-filled' | 'offer' | 'truck' | 'microphone' | 'home' | 'category' | 'chevron-left' | 'chevron-right' | 'camera' | 'wallet' | 'gem' | 'ar' | 'live' | 'gift' | 'game-controller' | 'secure-payment' | 'map-pin' | 'sparkles' | 'book-open' | 'flower' | 'plane' | 'filter' | 'return' | 'analytics';
+type IconName = 'cart' | 'user' | 'search' | 'star-filled' | 'star-empty' | 'plus' | 'minus' | 'trash' | 'chevron-down' | 'logo' | 'check' | 'wishlist' | 'wishlist-filled' | 'offer' | 'truck' | 'microphone' | 'home' | 'category' | 'chevron-left' | 'chevron-right' | 'camera' | 'wallet' | 'gem' | 'ar' | 'live' | 'gift' | 'game-controller' | 'secure-payment' | 'map-pin' | 'sparkles' | 'book-open' | 'flower' | 'plane' | 'filter' | 'return' | 'analytics' | 'print';
 
 interface IconProps {
   name: IconName;
@@ -128,6 +127,9 @@ const ICONS: Record<IconName, React.ReactNode> = {
   ),
   'analytics': (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2M4 4h16v16H4V4z" />
+  ),
+  'print': (
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
   )
 };
 

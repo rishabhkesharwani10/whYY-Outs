@@ -26,10 +26,10 @@ const CartPage: React.FC = () => {
     setTimeout(() => setPriceFlashId(null), 500);
   };
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
       e.preventDefault();
       if (couponInput.trim()) {
-          applyCoupon(couponInput.trim());
+          await applyCoupon(couponInput.trim());
       }
   }
 

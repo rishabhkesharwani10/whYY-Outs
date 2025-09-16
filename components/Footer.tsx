@@ -1,14 +1,10 @@
+
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Icon from './Icon.tsx';
+import { SITE_MAP, PAGE_ROUTES } from '../constants.ts';
 
 const Footer: React.FC = () => {
-  const links = {
-    'Company': ['About Us', 'Careers', 'Press', 'whYYOuts Live'],
-    'Help': ['Payments', 'Shipping', 'Cancellation & Returns', 'FAQ'],
-    'Policy': ['Return Policy', 'Terms Of Use', 'Security', 'Privacy'],
-  };
-
   const TrustBadge = ({ icon, title, subtitle }: { icon: any, title: string, subtitle?: string }) => (
     <div className="flex items-center gap-4">
       <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 border-2 border-brand-gold/30 text-brand-gold">
@@ -43,26 +39,22 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Links Sections */}
-          {Object.entries(links).map(([title, items]) => (
+          {Object.entries(SITE_MAP).map(([title, items]) => (
             <div key={title}>
               <h3 className="uppercase tracking-widest text-brand-gold/80 font-semibold text-sm mb-4">{title}</h3>
               <ul className="space-y-2">
                 {items.map(item => {
                   const className = "text-sm text-brand-light/70 hover:text-white transition-colors duration-300";
-                  if (item === 'Privacy') {
+                  const to = PAGE_ROUTES[item];
+
+                  if (to) {
                     return (
                       <li key={item}>
-                        <ReactRouterDOM.Link to="/privacy-policy" className={className}>{item}</ReactRouterDOM.Link>
+                        <ReactRouterDOM.Link to={to} className={className}>{item}</ReactRouterDOM.Link>
                       </li>
                     );
                   }
-                  if (item === 'Terms Of Use') {
-                    return (
-                      <li key={item}>
-                        <ReactRouterDOM.Link to="/terms-of-use" className={className}>{item}</ReactRouterDOM.Link>
-                      </li>
-                    );
-                  }
+
                   return (
                     <li key={item}>
                       <a href="#" className={className}>{item}</a>
@@ -76,7 +68,7 @@ const Footer: React.FC = () => {
         
         <div className="mt-12 pt-8 border-t border-brand-gold/10 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
           <p className="text-xs text-brand-light/60 mb-4 md:mb-0">
-            © 2025 whYYOuts. All rights reserved.
+            © {new Date().getFullYear()} whYYOuts. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <a href="#" className="text-brand-light/60 hover:text-white transition-colors duration-300">Instagram</a>

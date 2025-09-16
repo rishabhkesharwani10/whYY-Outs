@@ -122,6 +122,9 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             console.error('Error cancelling order via RPC:', error);
             return { error };
         }
+        // Optimistically update UI for instant feedback. The real-time listener will confirm this state.
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'Cancelled' } : o));
+
     } else {
         // For other status updates (by seller/admin), use the direct update method.
         const { error } = await supabase

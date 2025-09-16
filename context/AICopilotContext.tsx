@@ -15,12 +15,9 @@ interface AICopilotContextType {
 
 export const AICopilotContext = createContext<AICopilotContextType | undefined>(undefined);
 
-// Ensure process.env.API_KEY is defined in your environment
-const API_KEY = process.env.API_KEY;
-if (!API_KEY) {
-  console.error("Gemini API key is not set. Please set the API_KEY environment variable.");
-}
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Per security best practices, the API key is sourced from the environment variable `process.env.API_KEY`.
+// This prevents exposing sensitive credentials in the source code. The application assumes this is pre-configured.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const responseSchema = {
     type: Type.OBJECT,

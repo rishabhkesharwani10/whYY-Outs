@@ -5,6 +5,7 @@ import { useCart } from '../hooks/useCart.ts';
 import { useWishlist } from '../hooks/useWishlist.ts';
 import Icon from './Icon.tsx';
 import { useNotifications } from '../hooks/useNotifications.ts';
+import { SITE_MAP, PAGE_ROUTES } from '../constants.ts';
 
 const NotificationPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { notifications, markAllAsRead } = useNotifications();
@@ -56,6 +57,37 @@ const NotificationPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
     );
 };
+
+const NavDropdown: React.FC<{ title: string, items: string[], pageLinks: { [key: string]: string } }> = ({ title, items, pageLinks }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button className="flex items-center gap-1 text-brand-light/80 hover:text-white transition-colors duration-300 py-2">
+        <span className="text-sm uppercase tracking-wider">{title}</span>
+        <Icon name="chevron-down" className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-56 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-2xl z-50 page-fade-in">
+          <div className="p-2">
+            {items.map(item => {
+              const to = pageLinks[item];
+              const className = "block w-full text-left px-4 py-2 text-sm rounded-md text-brand-light/90 hover:bg-brand-gold/10 transition-colors";
+              if (to) {
+                return <ReactRouterDOM.Link to={to} key={item} className={className}>{item}</ReactRouterDOM.Link>
+              }
+              return <a href="#" key={item} className={className}>{item}</a>
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const Header: React.FC<{ showSearch?: boolean }> = ({ showSearch = true }) => {
   const { user, isAuthenticated } = useAuth();
@@ -111,7 +143,7 @@ const Header: React.FC<{ showSearch?: boolean }> = ({ showSearch = true }) => {
     <>
       <header className="fixed top-0 left-0 right-0 bg-brand-dark/50 backdrop-blur-xl z-50 font-sans shadow-lg shadow-black/30 border-b border-brand-gold/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-4 h-[72px]">
             <ReactRouterDOM.Link to="/" className="w-32 h-10 flex-shrink-0" aria-label="whYYOuts Homepage">
               <Icon name="logo" className="w-full h-full" />
             </ReactRouterDOM.Link>
@@ -123,6 +155,14 @@ const Header: React.FC<{ showSearch?: boolean }> = ({ showSearch = true }) => {
             )}
 
             <nav className="flex items-center space-x-2 md:space-x-3">
+              <div className="hidden lg:flex items-center gap-4">
+                <NavDropdown title="Company" items={SITE_MAP.Company} pageLinks={PAGE_ROUTES} />
+                <NavDropdown title="Help" items={SITE_MAP.Help} pageLinks={PAGE_ROUTES} />
+                <NavDropdown title="Policy" items={SITE_MAP.Policy} pageLinks={PAGE_ROUTES} />
+              </div>
+
+              <div className="hidden lg:block w-px h-6 bg-brand-gold/20 mx-2"></div>
+
               {isAuthenticated && user ? (
                 <>
                   <ReactRouterDOM.Link to="/profile" className="flex items-center gap-2 p-2 text-brand-light/80 hover:text-white transition-colors duration-300" aria-label="Profile">

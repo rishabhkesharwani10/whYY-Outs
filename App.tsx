@@ -1,4 +1,3 @@
-
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useAuth } from './context/AuthContext.tsx';
@@ -28,6 +27,8 @@ import AdminUsersPage from './pages/admin/AdminUsersPage.tsx';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage.tsx';
 import AdminCouponsPage from './pages/admin/AdminCouponsPage.tsx';
 import AdminReturnsPage from './pages/admin/AdminReturnsPage.tsx';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage.tsx';
+import AdminRevenuePage from './pages/admin/AdminRevenuePage.tsx';
 import NotFoundPage from './pages/NotFoundPage.tsx';
 import AICopilotModal from './components/AICopilotModal.tsx';
 import AIPilotFAB from './components/AIPilotFAB.tsx';
@@ -36,6 +37,9 @@ import { useCart } from './hooks/useCart.ts';
 import Icon from './components/Icon.tsx';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.tsx';
 import TermsOfUsePage from './pages/TermsOfUsePage.tsx';
+import ReturnPolicyPage from './pages/ReturnPolicyPage.tsx';
+import SecurityPolicyPage from './pages/SecurityPolicyPage.tsx';
+import AboutUsPage from './pages/AboutUsPage.tsx';
 
 // Seller Pages
 import SellerDashboardPage from './pages/SellerDashboardPage.tsx';
@@ -125,6 +129,9 @@ const App: React.FC = () => {
         <ReactRouterDOM.Route path="/product/:productId" element={<ProductDetailPage />} />
         <ReactRouterDOM.Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <ReactRouterDOM.Route path="/terms-of-use" element={<TermsOfUsePage />} />
+        <ReactRouterDOM.Route path="/return-policy" element={<ReturnPolicyPage />} />
+        <ReactRouterDOM.Route path="/security-policy" element={<SecurityPolicyPage />} />
+        <ReactRouterDOM.Route path="/about-us" element={<AboutUsPage />} />
         
         {/* Protected Routes */}
         <ReactRouterDOM.Route element={<ProtectedRoute />}>
@@ -157,13 +164,17 @@ const App: React.FC = () => {
           <ReactRouterDOM.Route path="/admin/orders" element={<AdminOrdersPage />} />
           <ReactRouterDOM.Route path="/admin/coupons" element={<AdminCouponsPage />} />
           <ReactRouterDOM.Route path="/admin/returns" element={<AdminReturnsPage />} />
+          <ReactRouterDOM.Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+          <ReactRouterDOM.Route path="/admin/revenue" element={<AdminRevenuePage />} />
         </ReactRouterDOM.Route>
 
         <ReactRouterDOM.Route path="*" element={<NotFoundPage />} />
       </ReactRouterDOM.Routes>
-      <ToastContainer />
-      <AICopilotModal />
-      <AIPilotFAB />
+      <div className="print:hidden">
+        <ToastContainer />
+        <AICopilotModal />
+        <AIPilotFAB />
+      </div>
     </>
   );
 };

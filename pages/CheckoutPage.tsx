@@ -63,8 +63,7 @@ const CheckoutPage: React.FC = () => {
     };
   }, [setShippingFee]);
 
-  const handleApplyCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApplyCoupon = async () => {
     if (couponInput.trim()) {
         await applyCoupon(couponInput.trim());
     }
@@ -221,12 +220,33 @@ const CheckoutPage: React.FC = () => {
                 </div>
                 <div className="border-t border-brand-gold/20 my-4"></div>
                 
-                <form onSubmit={handleApplyCoupon} className="mb-4">
+                <div className="mb-4">
                   <div className="flex gap-2">
-                      <input type="text" id="coupon-checkout" value={couponInput} onChange={(e) => setCouponInput(e.target.value)} placeholder="Coupon Code" className="w-full bg-black/40 border border-brand-gold/30 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-brand-gold" disabled={!!couponCode} />
-                      <button type="submit" className="px-4 py-2 text-sm font-semibold bg-brand-gold/20 border border-brand-gold/50 text-brand-gold rounded-md hover:bg-brand-gold/30 transition-colors disabled:opacity-50" disabled={!!couponCode}>Apply</button>
+                      <input 
+                        type="text" 
+                        id="coupon-checkout" 
+                        value={couponInput} 
+                        onChange={(e) => setCouponInput(e.target.value)} 
+                        placeholder="Coupon Code" 
+                        className="w-full bg-black/40 border border-brand-gold/30 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-brand-gold" 
+                        disabled={!!couponCode}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleApplyCoupon();
+                            }
+                        }}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={handleApplyCoupon}
+                        className="px-4 py-2 text-sm font-semibold bg-brand-gold/20 border border-brand-gold/50 text-brand-gold rounded-md hover:bg-brand-gold/30 transition-colors disabled:opacity-50" 
+                        disabled={!!couponCode || !couponInput.trim()}
+                      >
+                        Apply
+                      </button>
                   </div>
-                </form>
+                </div>
                 {couponMessage && <p className={`text-xs mb-2 ${couponMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>{couponMessage.text}</p>}
 
                 <div className="space-y-2 text-brand-light/90">

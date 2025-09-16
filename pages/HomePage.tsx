@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import Header from '../components/Header.tsx';
@@ -104,10 +105,10 @@ const LoggedInHomePage: React.FC = () => {
   const flashDealProduct = !loading && products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
 
   return (
-    <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
+    <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden">
       <div className="absolute inset-0 bg-grid-gold opacity-5 z-0"></div>
       <Header />
-      <main className="pb-24 md:pb-8 pt-28 space-y-12">
+      <main className="pb-24 md:pb-8 pt-28 space-y-12 page-fade-in">
         <WelcomeUser name={user.fullName} />
         {loading ? <HomeContentSkeleton /> : (
             <section className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -144,10 +145,10 @@ const PublicHomePage: React.FC = () => {
   const flashDealProduct = !loading && products.length > 4 ? products[4] : (products.length > 1 ? products[1] : null);
 
   return (
-    <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden page-fade-in">
+    <div className="bg-brand-dark text-brand-light min-h-screen font-sans relative overflow-x-hidden">
       <div className="absolute inset-0 bg-grid-gold opacity-5 z-0"></div>
       <Header />
-      <main className="pb-24 md:pb-8 pt-28 space-y-12">
+      <main className="pb-24 md:pb-8 pt-28 space-y-12 page-fade-in">
         <WelcomePublic />
         {loading ? <HomeContentSkeleton /> : (
             <section className="container mx-auto px-4 sm:px-6 lg:px-8">

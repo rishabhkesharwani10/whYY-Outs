@@ -1,5 +1,4 @@
 
-
 import type { Category, NavigationCategory } from './types.ts';
 
 export const CATEGORIES: Category[] = [
@@ -137,4 +136,18 @@ export const SMART_SUGGESTIONS: { [key: string]: { name: string, icon: any }[] }
         { name: 'Mouse & Keyboards', icon: 'category' },
         { name: 'External Hard Drives', icon: 'category' },
     ]
+};
+
+export const SITE_MAP = {
+  'Company': ['About Us', 'Careers', 'Press', 'whYYOuts Live'],
+  'Help': ['Payments', 'Shipping', 'Cancellation & Returns', 'FAQ'],
+  'Policy': ['Return Policy', 'Terms Of Use', 'Security', 'Privacy'],
+};
+
+export const PAGE_ROUTES: { [key: string]: string } = {
+  'Return Policy': '/return-policy',
+  'Terms Of Use': '/terms-of-use',
+  'Security': '/security-policy',
+  'Privacy': '/privacy-policy',
+  'About Us': '/about-us',
 };
