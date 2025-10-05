@@ -59,14 +59,15 @@ const SellerOrdersPage: React.FC = () => {
                                         <select
                                             value={order.status}
                                             onChange={(e) => handleStatusChange(order.id, e.target.value as Order['status'])}
-                                            disabled={updatingStatus[order.id] || order.status === 'Delivered' || order.status === 'Cancelled'}
+                                            disabled={updatingStatus[order.id] || order.status !== 'Processing'}
                                             className={`w-32 text-xs font-semibold rounded-md border py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-brand-gold transition-colors ${getStatusClass(order.status)} disabled:opacity-70 disabled:cursor-not-allowed`}
                                             style={{ backgroundColor: 'transparent' }}
                                         >
                                             <option value="Processing">Processing</option>
                                             <option value="Shipped">Shipped</option>
-                                            <option value="Delivered">Delivered</option>
-                                            <option value="Cancelled">Cancelled</option>
+                                            {/* To ensure the select shows the correct value if it's in a state the seller can't set */}
+                                            {order.status === 'Delivered' && <option value="Delivered">Delivered</option>}
+                                            {order.status === 'Cancelled' && <option value="Cancelled">Cancelled</option>}
                                         </select>
                                     </td>
                                     <td className="p-4 text-right">

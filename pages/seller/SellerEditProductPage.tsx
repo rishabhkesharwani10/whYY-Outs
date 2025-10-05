@@ -149,7 +149,7 @@ const SellerEditProductPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!productId || !product) return;
+        if (!productId || !product || !user) return;
         setIsSubmitting(true);
         setError('');
         setMessage('');
@@ -162,7 +162,7 @@ const SellerEditProductPage: React.FC = () => {
             setUploadStatus(`Uploading ${compressedFiles.length} new image(s)...`);
             const newImageUrls = await Promise.all(
                 compressedFiles.map(async (file) => {
-                    const filePath = `public/${Date.now()}-${file.name}`;
+                    const filePath = `public/${user.id}/${Date.now()}-${file.name}`;
                     await supabase.storage.from('product-images').upload(filePath, file);
                     return supabase.storage.from('product-images').getPublicUrl(filePath).data.publicUrl;
                 })
@@ -375,13 +375,8 @@ const SellerEditProductPage: React.FC = () => {
                         <div className="pt-4 space-y-4">
                             {error && <p className="text-red-400 text-center">{error}</p>}
                             {message && <p className="text-green-400 text-center">{message}</p>}
-                            <button type="submit" disabled={isSubmitting || isActing} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold bg-brand-gold text-brand-dark hover:bg-brand-gold-dark transition-colors duration-300 uppercase disabled:opacity-50 flex justify-center items-center">
-                                {isSubmitting ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-3"></div>
-                                        <span>{uploadStatus || 'Saving...'}</span>
-                                    </>
-                                ) : 'Save Changes'}
+                            <button type="submit" disabled={isSubmitting || isActing} className="w-full font-sans text-sm tracking-widest px-8 py-3 border border-brand-gold bg-brand-gold text-brand-dark hover:bg-brand-gold-dark transition-colors duration-300 uppercase disabled:opacity-50">
+                                {isSubmitting ? 'Saving...' : 'Save Changes'}
                             </button>
                              <div className="border-t border-brand-gold/20 pt-4">
                                 <h3 className="font-serif text-lg text-red-500/80 mb-2">Danger Zone</h3>

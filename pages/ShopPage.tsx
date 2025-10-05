@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION_CATEGORIES, SMART_SUGGESTIONS } from '../constants.ts';
