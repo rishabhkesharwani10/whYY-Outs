@@ -1,0 +1,9 @@
+{
+  "name": "whYYOuts",
+  "description": "A next-generation, AI-first e-commerce platform. Experience hyper-personalized, multimodal shopping with an AI Co-Pilot, DealBrain™ auto-offers, and a futuristic, premium design.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation",
+    "camera"
+  ]
+}

@@ -1,0 +1,201 @@
+body {
+  background-color: #101010; /* brand-dark */
+  font-family: "Poppins", sans-serif;
+}
+/* For custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+.bg-grid-gold {
+  background-image:
+    linear-gradient(to right, rgba(191, 161, 129, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(191, 161, 129, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Enforce lining numerals for the serif font to ensure consistent number alignment. */
+.font-serif {
+  font-variant-numeric: lining-nums;
+}
+
+/* Custom Checkbox */
+.form-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid #BFA18180; /* brand-gold with opacity */
+  background-color: #00000033; /* black/20 */
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+.form-checkbox:checked {
+  background-color: #BFA181; /* brand-gold */
+  border-color: #BFA181;
+}
+.form-checkbox:checked::after {
+  content: '✔';
+  position: absolute;
+  color: #101010; /* brand-dark */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Custom Radio Button */
+.form-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 50%;
+  border: 1px solid #BFA18180; /* brand-gold with opacity */
+  background-color: #00000033; /* black/20 */
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+.form-radio:checked {
+  background-color: #BFA181; /* brand-gold */
+  border-color: #BFA181;
+}
+.form-radio:checked::after {
+  content: '';
+  position: absolute;
+  background-color: #101010; /* brand-dark */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+
+/* Custom Range Slider */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #BFA18180; /* brand-gold with opacity */
+  border-radius: 5px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #BFA181; /* brand-gold */
+  cursor: pointer;
+  margin-top: -6px;
+}
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #BFA18180;
+  border-radius: 5px;
+}
+input[type=range]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #BFA181;
+  cursor: pointer;
+}
+
+/* Page Transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Animation for processing button */
+@keyframes subtle-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(191, 161, 129, 0.4);
+    border-color: #BFA181;
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(191, 161, 129, 0);
+    border-color: #D7C0A5;
+  }
+}
+.animate-subtle-pulse {
+  animation: subtle-pulse 2s infinite;
+}
+
+/* Animation for microphone listening */
+@keyframes mic-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+.animate-mic-pulse {
+  animation: mic-pulse 1.5s infinite ease-in-out;
+}
+
+/* Thermal Printer Styles */
+@media print {
+  @page {
+    size: 80mm;
+    margin: 4mm;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    width: 72mm; /* 80mm page width - 4mm margin on each side */
+  }
+  
+  /* Tailwind's `print:hidden` utility class handles hiding non-printable elements. */
+  
+  .printable-receipt {
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 9pt !important;
+    color: #000 !important;
+  }
+  
+  .printable-receipt * {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    color: inherit !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
