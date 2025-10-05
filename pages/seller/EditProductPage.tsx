@@ -160,7 +160,7 @@ const SellerEditProductPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!productId || !product || !user) return;
+        if (!productId || !product) return;
         setIsSubmitting(true);
         setError('');
         setMessage('');
@@ -168,7 +168,7 @@ const SellerEditProductPage: React.FC = () => {
         try {
             const newImageUrls = await Promise.all(
                 newImageFiles.map(async (file) => {
-                    const filePath = `public/${user.id}/${Date.now()}-${file.name}`;
+                    const filePath = `public/${Date.now()}-${file.name}`;
                     await supabase.storage.from('product-images').upload(filePath, file);
                     return supabase.storage.from('product-images').getPublicUrl(filePath).data.publicUrl;
                 })
